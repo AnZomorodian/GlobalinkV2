@@ -10,6 +10,10 @@ import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Reply, Copy, Paperclip, Send, Smile, Search, Phone, Video, Info, MoreHorizontal } from "lucide-react";
 import type { User, Message } from "@shared/schema";
 
 interface ChatAreaProps {
@@ -35,8 +39,9 @@ export default function ChatArea({
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const emojis = ["😀", "😂", "😊", "😍", "🤔", "😢", "😡", "👍", "👎", "❤️", "🎉", "🔥", "💯", "👏", "🙏"];
-  const messageInputRef = useRef<HTMLInputElement>(null);
+  const emojis = ["😀", "😂", "😊", "😍", "🤔", "😢", "😡", "👍", "👎", "❤️", "🎉", "🔥", "💯", "👏", "🙏", "🎊", "✨", "⚡", "🌟", "💫"];
+  const messageInputRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Fetch contact details
   const { data: contacts = [] } = useQuery({
@@ -140,6 +145,22 @@ export default function ChatArea({
     messageInputRef.current?.focus();
   };
 
+  const handleFileUpload = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // For now, just show the file name in the message
+      setMessageInput(prev => prev + `[File: ${file.name}]`);
+      toast({
+        title: "File Selected",
+        description: `Selected: ${file.name}`,
+      });
+    }
+  };
+
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -180,217 +201,252 @@ export default function ChatArea({
   return (
     <div className="flex-1 flex flex-col">
       {/* Chat Header */}
-      <div className="bg-white border-b border-gray-200 p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <Avatar className="w-10 h-10">
-              <AvatarImage src={selectedContact?.profileImageUrl || ""} />
-              <AvatarFallback>
-                {selectedContact?.firstName?.[0]}{selectedContact?.lastName?.[0]}
-              </AvatarFallback>
-            </Avatar>
-            <div>
-              <h2 className="text-lg font-semibold text-gray-900">
-                {selectedContact?.firstName} {selectedContact?.lastName}
-              </h2>
-              <div className="flex items-center space-x-2">
-                <div className={`w-2 h-2 rounded-full ${
-                  selectedContact?.status === 'online' ? 'bg-green-500' :
-                  selectedContact?.status === 'away' ? 'bg-yellow-500' :
-                  selectedContact?.status === 'busy' ? 'bg-red-500' : 'bg-gray-300'
-                }`}></div>
-                <p className="text-sm text-gray-600">
-                  {selectedContact?.status === 'online' ? 'Online' : 
-                   selectedContact?.status === 'away' ? 'Away' :
-                   selectedContact?.status === 'busy' ? 'Busy' : 'Offline'} • ID: {selectedContact?.id}
-                </p>
+      <Card className="border-b border-gray-200 rounded-none bg-gradient-to-r from-corp-blue to-blue-600 text-white">
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <Avatar className="w-12 h-12 ring-2 ring-white/20">
+                <AvatarImage src={selectedContact?.profileImageUrl || ""} />
+                <AvatarFallback className="bg-white/20 text-white">
+                  {selectedContact?.firstName?.[0]}{selectedContact?.lastName?.[0]}
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <h2 className="text-lg font-semibold">
+                  {selectedContact?.firstName} {selectedContact?.lastName}
+                </h2>
+                <div className="flex items-center space-x-2">
+                  <div className={`w-2 h-2 rounded-full ${
+                    selectedContact?.status === 'online' ? 'bg-green-400' :
+                    selectedContact?.status === 'away' ? 'bg-yellow-400' :
+                    selectedContact?.status === 'busy' ? 'bg-red-400' : 'bg-gray-300'
+                  }`}></div>
+                  <p className="text-sm text-white/80">
+                    {selectedContact?.status === 'online' ? 'Online' : 
+                     selectedContact?.status === 'away' ? 'Away' :
+                     selectedContact?.status === 'busy' ? 'Busy' : 'Offline'} • ID: {selectedContact?.id}
+                  </p>
+                </div>
               </div>
             </div>
+            <div className="flex items-center space-x-1">
+              <Button variant="ghost" size="sm" onClick={() => onCallStart('voice')} className="hover:bg-white/10 text-white">
+                <Phone className="w-4 h-4" />
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => onCallStart('video')} className="hover:bg-white/10 text-white">
+                <Video className="w-4 h-4" />
+              </Button>
+              <Button variant="ghost" size="sm" onClick={onContactInfoToggle} className="hover:bg-white/10 text-white">
+                <Info className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
-          <div className="flex items-center space-x-2">
-            <Button variant="ghost" size="sm" onClick={() => onCallStart('voice')}>
-              <i className="fas fa-phone text-gray-600"></i>
-            </Button>
-            <Button variant="ghost" size="sm" onClick={() => onCallStart('video')}>
-              <i className="fas fa-video text-gray-600"></i>
-            </Button>
-            <Button variant="ghost" size="sm" onClick={onContactInfoToggle}>
-              <i className="fas fa-info-circle text-gray-600"></i>
-            </Button>
-          </div>
-        </div>
 
-        {/* Search Bar */}
-        <div className="mt-3">
-          <div className="relative">
-            <Input
-              type="text"
-              placeholder="Search messages..."
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              className="pl-10"
-            />
-            <i className="fas fa-search absolute left-3 top-2.5 text-gray-400 text-sm"></i>
+          {/* Search Bar */}
+          <div className="mt-4">
+            <div className="relative">
+              <Input
+                type="text"
+                placeholder="Search messages..."
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:bg-white/20"
+              />
+              <Search className="absolute left-3 top-2.5 text-white/60 w-4 h-4" />
+            </div>
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
       {/* Messages Container */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messagesLoading ? (
-          <div className="flex items-center justify-center h-full">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-corp-blue"></div>
-          </div>
-        ) : messages.length === 0 ? (
-          <div className="flex items-center justify-center h-full text-gray-500">
-            No messages yet. Start the conversation!
-          </div>
-        ) : (
-          filteredMessages.reverse().map((message: any) => {
-            const isOwn = message.senderId === currentUser.id;
-            return (
-              <div key={message.id} className={`flex items-start space-x-3 ${isOwn ? 'justify-end' : ''}`}>
-                {!isOwn && (
-                  <Avatar className="w-8 h-8">
-                    <AvatarImage src={selectedContact?.profileImageUrl || ""} />
-                    <AvatarFallback>
-                      {selectedContact?.firstName?.[0]}{selectedContact?.lastName?.[0]}
-                    </AvatarFallback>
-                  </Avatar>
-                )}
-                <div className={`max-w-xs lg:max-w-md ${isOwn ? 'order-first' : ''}`}>
-                  {message.replyToId && (
-                    <div className="mb-2 opacity-75">
-                      <div className="text-xs text-gray-500 border-l-2 border-gray-300 pl-2">
-                        <i className="fas fa-reply mr-1"></i>
-                        Replying to message
-                      </div>
-                    </div>
+      <ScrollArea className="flex-1 p-4 bg-gradient-to-b from-gray-50 to-white">
+        <div className="space-y-4">
+          {messagesLoading ? (
+            <div className="flex items-center justify-center h-full">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-corp-blue"></div>
+            </div>
+          ) : messages.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-full text-gray-500 py-20">
+              <div className="bg-gray-100 rounded-full p-6 mb-4">
+                <Send className="w-8 h-8 text-gray-400" />
+              </div>
+              <p className="text-lg font-medium">No messages yet</p>
+              <p className="text-sm">Start the conversation!</p>
+            </div>
+          ) : (
+            filteredMessages.reverse().map((message: any) => {
+              const isOwn = message.senderId === currentUser.id;
+              return (
+                <div key={message.id} className={`flex items-start space-x-3 ${isOwn ? 'justify-end' : ''}`}>
+                  {!isOwn && (
+                    <Avatar className="w-8 h-8 ring-2 ring-white shadow-sm">
+                      <AvatarImage src={selectedContact?.profileImageUrl || ""} />
+                      <AvatarFallback className="bg-gray-100">
+                        {selectedContact?.firstName?.[0]}{selectedContact?.lastName?.[0]}
+                      </AvatarFallback>
+                    </Avatar>
                   )}
-                  <div className={`rounded-lg p-3 shadow-sm group relative ${
-                    isOwn 
-                      ? 'bg-corp-blue text-white' 
-                      : 'bg-white border border-gray-200 text-gray-900'
-                  }`}>
-                    <p className="text-sm">{message.content}</p>
-                    
-                    {/* Message Actions */}
-                    <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
+                  <div className={`max-w-xs lg:max-w-md ${isOwn ? 'order-first' : ''}`}>
+                    {message.replyToId && (
+                      <div className="mb-2 opacity-75">
+                        <div className="text-xs text-gray-500 border-l-2 border-corp-blue pl-2 bg-gray-50 rounded p-2">
+                          <Reply className="w-3 h-3 inline mr-1" />
+                          Replying to message
+                        </div>
+                      </div>
+                    )}
+                    <div className={`rounded-2xl p-3 shadow-sm group relative transition-all hover:shadow-md ${
+                      isOwn 
+                        ? 'bg-gradient-to-r from-corp-blue to-blue-600 text-white' 
+                        : 'bg-white border border-gray-200 text-gray-900'
+                    }`}>
+                      <p className="text-sm leading-relaxed">{message.content}</p>
+                      
+                      {/* Message Actions */}
+                      <div className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="flex items-center space-x-1 bg-white rounded-full shadow-lg p-1">
                           <Button 
                             variant="ghost" 
                             size="sm" 
-                            className="h-6 w-6 p-0 hover:bg-gray-100"
+                            onClick={() => handleReply(message)}
+                            className="h-6 w-6 p-0 hover:bg-gray-100 rounded-full"
                           >
-                            <i className="fas fa-ellipsis-v text-xs"></i>
+                            <Reply className="w-3 h-3 text-gray-600" />
                           </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent>
-                          <DropdownMenuItem onClick={() => handleReply(message)}>
-                            <i className="fas fa-reply mr-2"></i>
-                            Reply
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleCopy(message.content)}>
-                            <i className="fas fa-copy mr-2"></i>
-                            Copy
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={() => handleCopy(message.content)}
+                            className="h-6 w-6 p-0 hover:bg-gray-100 rounded-full"
+                          >
+                            <Copy className="w-3 h-3 text-gray-600" />
+                          </Button>
+                        </div>
+                      </div>
                     </div>
+                    <p className={`text-xs text-gray-500 mt-1 ${isOwn ? 'text-right' : ''}`}>
+                      {formatTime(message.createdAt)}
+                    </p>
                   </div>
-                  <p className={`text-xs text-gray-500 mt-1 ${isOwn ? 'text-right' : ''}`}>
-                    {formatTime(message.createdAt)}
-                  </p>
+                  {isOwn && (
+                    <Avatar className="w-8 h-8 ring-2 ring-white shadow-sm">
+                      <AvatarImage src={currentUser.profileImageUrl || ""} />
+                      <AvatarFallback className="bg-corp-blue text-white">
+                        {currentUser.firstName?.[0]}{currentUser.lastName?.[0]}
+                      </AvatarFallback>
+                    </Avatar>
+                  )}
                 </div>
-                {isOwn && (
-                  <Avatar className="w-8 h-8">
-                    <AvatarImage src={currentUser.profileImageUrl || ""} />
-                    <AvatarFallback>
-                      {currentUser.firstName?.[0]}{currentUser.lastName?.[0]}
-                    </AvatarFallback>
-                  </Avatar>
-                )}
-              </div>
-            );
-          })
-        )}
-        <div ref={messagesEndRef} />
-      </div>
+              );
+            })
+          )}
+          <div ref={messagesEndRef} />
+        </div>
+      </ScrollArea>
 
       {/* Message Input */}
-      <div className="bg-white border-t border-gray-200 p-4">
-        {/* Reply Preview */}
-        {replyTo && (
-          <div className="mb-3 p-2 bg-gray-50 rounded border-l-4 border-corp-blue">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <i className="fas fa-reply text-corp-blue"></i>
-                <span className="text-sm text-gray-600">
-                  Replying to {replyTo.sender?.firstName}
-                </span>
+      <Card className="border-t border-gray-200 rounded-none bg-white shadow-lg">
+        <CardContent className="p-4">
+          {/* Reply Preview */}
+          {replyTo && (
+            <div className="mb-3 p-3 bg-blue-50 rounded-lg border-l-4 border-corp-blue">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <Reply className="w-4 h-4 text-corp-blue" />
+                  <span className="text-sm text-gray-700 font-medium">
+                    Replying to {replyTo.sender?.firstName}
+                  </span>
+                </div>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => setReplyTo(null)}
+                  className="h-6 w-6 p-0 hover:bg-red-100"
+                >
+                  <span className="text-gray-400">×</span>
+                </Button>
               </div>
+              <p className="text-xs text-gray-600 mt-1 truncate bg-white p-2 rounded">
+                {replyTo.content}
+              </p>
+            </div>
+          )}
+
+          <div className="flex items-end space-x-3">
+            <div className="flex space-x-1">
               <Button 
                 variant="ghost" 
                 size="sm" 
-                onClick={() => setReplyTo(null)}
-                className="h-6 w-6 p-0"
+                onClick={handleFileUpload}
+                className="hover:bg-gray-100 text-gray-600"
               >
-                <i className="fas fa-times text-gray-400"></i>
+                <Paperclip className="w-4 h-4" />
+              </Button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                className="hidden"
+                onChange={handleFileSelect}
+                accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.txt"
+              />
+            </div>
+            
+            <div className="flex-1">
+              <Textarea
+                ref={messageInputRef}
+                placeholder="Type a message..."
+                value={messageInput}
+                onChange={(e) => setMessageInput(e.target.value)}
+                onKeyPress={handleKeyPress}
+                disabled={sendMessageMutation.isPending}
+                className="min-h-[40px] max-h-[120px] resize-none border-2 border-gray-200 focus:border-corp-blue rounded-xl bg-gray-50 focus:bg-white transition-colors"
+                rows={1}
+              />
+            </div>
+            
+            <div className="flex items-center space-x-1">
+              <Popover open={showEmojiPicker} onOpenChange={setShowEmojiPicker}>
+                <PopoverTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    className="hover:bg-gray-100 text-gray-600"
+                  >
+                    <Smile className="w-4 h-4" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-80 p-4">
+                  <div className="grid grid-cols-6 gap-2">
+                    {emojis.map((emoji) => (
+                      <Button
+                        key={emoji}
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleEmojiSelect(emoji)}
+                        className="text-lg hover:bg-gray-100 h-8 w-8 p-0 rounded-full"
+                      >
+                        {emoji}
+                      </Button>
+                    ))}
+                  </div>
+                </PopoverContent>
+              </Popover>
+              
+              <Button 
+                onClick={handleSendMessage}
+                disabled={!messageInput.trim() || sendMessageMutation.isPending}
+                className="bg-gradient-to-r from-corp-blue to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-full w-10 h-10 p-0 shadow-lg hover:shadow-xl transition-all"
+              >
+                {sendMessageMutation.isPending ? (
+                  <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></div>
+                ) : (
+                  <Send className="w-4 h-4" />
+                )}
               </Button>
             </div>
-            <p className="text-xs text-gray-500 mt-1 truncate">
-              {replyTo.content}
-            </p>
           </div>
-        )}
-
-        <div className="flex items-center space-x-4">
-          <Button variant="ghost" size="sm">
-            <i className="fas fa-paperclip text-gray-600"></i>
-          </Button>
-          <div className="flex-1">
-            <Input
-              ref={messageInputRef}
-              type="text"
-              placeholder="Type a message..."
-              value={messageInput}
-              onChange={(e) => setMessageInput(e.target.value)}
-              onKeyPress={handleKeyPress}
-              disabled={sendMessageMutation.isPending}
-            />
-          </div>
-          <Popover open={showEmojiPicker} onOpenChange={setShowEmojiPicker}>
-            <PopoverTrigger asChild>
-              <Button variant="ghost" size="sm">
-                <i className="fas fa-smile text-gray-600"></i>
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-80">
-              <div className="grid grid-cols-5 gap-2">
-                {emojis.map((emoji) => (
-                  <Button
-                    key={emoji}
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleEmojiSelect(emoji)}
-                    className="text-lg hover:bg-gray-100"
-                  >
-                    {emoji}
-                  </Button>
-                ))}
-              </div>
-            </PopoverContent>
-          </Popover>
-          <Button 
-            onClick={handleSendMessage}
-            disabled={!messageInput.trim() || sendMessageMutation.isPending}
-            className="bg-corp-blue hover:bg-blue-700"
-          >
-            <i className="fas fa-paper-plane"></i>
-          </Button>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

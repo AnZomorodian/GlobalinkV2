@@ -36,9 +36,18 @@ export default function Home() {
           // Show notification if not currently viewing the sender
           if (data.message.senderId !== selectedContactId) {
             toast({
-              title: "New Message",
-              description: `Message from ${data.message.sender?.firstName}`,
+              title: "💬 New Message",
+              description: `${data.message.sender?.firstName}: ${data.message.content.substring(0, 50)}${data.message.content.length > 50 ? '...' : ''}`,
+              duration: 4000,
             });
+            
+            // Browser notification if permission granted
+            if (Notification.permission === 'granted') {
+              new Notification(`New message from ${data.message.sender?.firstName}`, {
+                body: data.message.content,
+                icon: data.message.sender?.profileImageUrl || '/default-avatar.png',
+              });
+            }
           }
           break;
           
@@ -75,6 +84,13 @@ export default function Home() {
       return;
     }
   }, [user, isLoading, toast]);
+
+  // Request notification permission
+  useEffect(() => {
+    if (Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+  }, []);
 
   if (isLoading) {
     return (

@@ -12,10 +12,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import type { User } from "@shared/schema";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { User, Building, Bell, Palette, Camera, Save, X } from "lucide-react";
+import type { User as UserType } from "@shared/schema";
 
 interface SettingsModalProps {
-  user: User;
+  user: UserType;
   onClose: () => void;
 }
 
@@ -26,6 +30,9 @@ export default function SettingsModal({ user, onClose }: SettingsModalProps) {
     email: user.email || "",
     department: user.department || "",
     bio: user.bio || "",
+    companyName: user.companyName || "",
+    jobTitle: user.jobTitle || "",
+    location: user.location || "",
   });
   
   const [notifications, setNotifications] = useState({

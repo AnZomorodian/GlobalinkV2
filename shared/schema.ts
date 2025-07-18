@@ -35,6 +35,9 @@ export const users = pgTable("users", {
   profileImageUrl: varchar("profile_image_url"),
   department: varchar("department"),
   bio: text("bio"),
+  companyName: varchar("company_name"),
+  jobTitle: varchar("job_title"),
+  location: varchar("location"),
   status: varchar("status").default("offline"), // online, offline, away, busy
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
