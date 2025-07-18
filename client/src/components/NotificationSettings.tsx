@@ -5,7 +5,8 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-import { Bell, MessageCircle, Phone, Mail, Smartphone, Volume2, VolumeX } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Bell, MessageCircle, Phone, Mail, Smartphone, Volume2, VolumeX, Clock, Play } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface NotificationSettingsProps {
@@ -67,370 +68,378 @@ const defaultConfig: NotificationConfig = {
   }
 };
 
+const soundOptions = [
+  { value: 'default', label: 'Default', url: 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAkUXrTp66hVFApGn+DyvmUeBjuU2e3ZdSoG' },
+  { value: 'chime', label: 'Chime', url: 'data:audio/wav;base64,UklGRjIEAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQ4EAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAkUXrTp66hVFApGn+DyvmUeBjuU2e3ZdSoG' },
+  { value: 'bell', label: 'Bell', url: 'data:audio/wav;base64,UklGRkgGAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YSQGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAkUXrTp66hVFApGn+DyvmUeBjuU2e3ZdSoGIHLF6daLOAcTXLLm7alEDgpFn93vvWMaAzCH0ezi' },
+  { value: 'soft', label: 'Soft Tone', url: 'data:audio/wav;base64,UklGRvoFAABXQVZFZm1AVDhQQU5DdGl0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAkUXrTp66hVFApGn+DyvmUeBjuU2e3ZdSoGI' }
+];
+
+const ringtoneOptions = [
+  { value: 'ringtone', label: 'Default Ring', url: 'data:audio/wav;base64,UklGRsQGAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YaAGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAkUXrTp66hVFApGn+DyvmUeBjuU2e3ZdSoGIHLF6daLOAcTXLLm' },
+  { value: 'classic', label: 'Classic Ring', url: 'data:audio/wav;base64,UklGRvYDAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YdIDAAAAlIqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAkUXrTp66hVFApGn+DyvmUeBjuU2e3ZdSoGIHLF6daLOAcT' },
+  { value: 'modern', label: 'Modern Ring', url: 'data:audio/wav;base64,UklGRsIEAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YZ4EAAB4hYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAkUXrTp66hVFApGn+DyvmUeBjuU2e3ZdSoGI' }
+];
+
 export function NotificationSettings({ isOpen, onClose }: NotificationSettingsProps) {
   const [config, setConfig] = useState<NotificationConfig>(defaultConfig);
   const [permissionStatus, setPermissionStatus] = useState<NotificationPermission>('default');
   const { toast } = useToast();
 
   useEffect(() => {
-    // Load saved settings from localStorage
-    const savedConfig = localStorage.getItem('notificationSettings');
-    if (savedConfig) {
-      try {
-        setConfig(JSON.parse(savedConfig));
-      } catch (error) {
-        console.error('Error loading notification settings:', error);
-      }
-    }
-
-    // Check notification permission
-    if ('Notification' in window) {
+    if (isOpen && 'Notification' in window) {
       setPermissionStatus(Notification.permission);
     }
-  }, []);
+  }, [isOpen]);
 
-  const saveConfig = (newConfig: NotificationConfig) => {
-    setConfig(newConfig);
-    localStorage.setItem('notificationSettings', JSON.stringify(newConfig));
-    toast({
-      title: 'Settings Saved',
-      description: 'Your notification preferences have been updated.',
-    });
-  };
-
-  const requestPermission = async () => {
+  const requestNotificationPermission = async () => {
     if ('Notification' in window) {
-      try {
-        const permission = await Notification.requestPermission();
-        setPermissionStatus(permission);
-        if (permission === 'granted') {
-          toast({
-            title: 'Notifications Enabled',
-            description: 'You will now receive desktop notifications.',
-          });
-        }
-      } catch (error) {
-        console.error('Error requesting notification permission:', error);
+      const permission = await Notification.requestPermission();
+      setPermissionStatus(permission);
+      if (permission === 'granted') {
+        toast({
+          title: 'Notifications Enabled',
+          description: 'You will now receive desktop notifications.',
+        });
       }
     }
   };
 
-  const testNotification = (type: 'message' | 'call') => {
-    if (permissionStatus !== 'granted') {
-      toast({
-        title: 'Permission Required',
-        description: 'Please enable notifications first.',
-        variant: 'destructive',
+  const playSound = (soundType: string, category: 'messages' | 'calls') => {
+    const soundList = category === 'calls' ? ringtoneOptions : soundOptions;
+    const sound = soundList.find(s => s.value === soundType);
+    
+    if (sound) {
+      const audio = new Audio(sound.url);
+      audio.volume = 0.5;
+      audio.play().catch(err => {
+        console.log('Could not play sound:', err);
+        toast({
+          title: 'Sound Preview',
+          description: `Playing ${sound.label} sound`,
+        });
       });
-      return;
     }
-
-    const notification = new Notification(
-      type === 'message' ? 'New Message' : 'Incoming Call',
-      {
-        body: type === 'message' ? 'Test message notification' : 'Test call notification',
-        icon: '/favicon.ico',
-        tag: 'test-notification'
-      }
-    );
-
-    // Play sound if enabled
-    if ((type === 'message' && config.messages.sound) || (type === 'call' && config.calls.sound)) {
-      const audio = new Audio('/notification-sound.mp3');
-      audio.play().catch(console.error);
-    }
-
-    setTimeout(() => notification.close(), 5000);
   };
 
-  const updateMessageSettings = (key: keyof NotificationConfig['messages'], value: any) => {
-    const newConfig = {
-      ...config,
-      messages: {
-        ...config.messages,
+  const updateConfig = (section: keyof NotificationConfig, key: string, value: any) => {
+    setConfig(prev => ({
+      ...prev,
+      [section]: {
+        ...prev[section],
         [key]: value
       }
-    };
-    saveConfig(newConfig);
+    }));
   };
 
-  const updateCallSettings = (key: keyof NotificationConfig['calls'], value: any) => {
-    const newConfig = {
-      ...config,
-      calls: {
-        ...config.calls,
-        [key]: value
-      }
-    };
-    saveConfig(newConfig);
-  };
-
-  const updateGeneralSettings = (key: keyof NotificationConfig['general'], value: any) => {
-    const newConfig = {
-      ...config,
+  const updateQuietHours = (key: string, value: any) => {
+    setConfig(prev => ({
+      ...prev,
       general: {
-        ...config.general,
-        [key]: value
-      }
-    };
-    saveConfig(newConfig);
-  };
-
-  const updateQuietHours = (key: keyof NotificationConfig['general']['quietHours'], value: any) => {
-    const newConfig = {
-      ...config,
-      general: {
-        ...config.general,
+        ...prev.general,
         quietHours: {
-          ...config.general.quietHours,
+          ...prev.general.quietHours,
           [key]: value
         }
       }
-    };
-    saveConfig(newConfig);
+    }));
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center space-x-2">
-            <Bell className="w-5 h-5" />
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] glass-card animate-slide-up border-0 shadow-2xl backdrop-blur-2xl bg-white/10">
+        <DialogHeader className="border-b border-white/20 pb-4">
+          <DialogTitle className="text-2xl font-bold gradient-text flex items-center space-x-3">
+            <div className="p-2 rounded-xl bg-gradient-to-br from-green-500/20 to-blue-600/20 backdrop-blur-sm">
+              <Bell className="w-6 h-6 text-green-600" />
+            </div>
             <span>Notification Settings</span>
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6">
-          {/* Permission Section */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Browser Permissions</h3>
-            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-              <div>
-                <p className="font-medium">Desktop Notifications</p>
-                <p className="text-sm text-gray-600">
-                  Status: {permissionStatus === 'granted' ? 'Enabled' : 'Disabled'}
-                </p>
-              </div>
-              {permissionStatus !== 'granted' && (
-                <Button onClick={requestPermission} variant="outline">
-                  Enable
+        <div className="space-y-6 max-h-[70vh] overflow-y-auto custom-scrollbar p-2">
+          {/* Browser Permissions */}
+          {permissionStatus !== 'granted' && (
+            <Card className="glass-card border-white/20 border-2 border-orange-200 bg-orange-50/50">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center space-x-2 text-orange-800">
+                  <Bell className="w-5 h-5" />
+                  <span>Browser Permissions</span>
+                </CardTitle>
+                <CardDescription className="text-orange-700">
+                  Enable browser notifications to receive desktop alerts
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button 
+                  onClick={requestNotificationPermission}
+                  className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white"
+                >
+                  <Bell className="w-4 h-4 mr-2" />
+                  Enable Notifications
                 </Button>
-              )}
-            </div>
-          </div>
-
-          <Separator />
+              </CardContent>
+            </Card>
+          )}
 
           {/* Message Notifications */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold flex items-center space-x-2">
-                <MessageCircle className="w-5 h-5" />
+          <Card className="glass-card border-white/20">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg flex items-center space-x-2">
+                <MessageCircle className="w-5 h-5 text-blue-600" />
                 <span>Message Notifications</span>
-              </h3>
-              <Button
-                onClick={() => testNotification('message')}
-                variant="outline"
-                size="sm"
-              >
-                Test
-              </Button>
-            </div>
-            
-            <div className="space-y-4">
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
-                <Label htmlFor="messages-enabled">Enable message notifications</Label>
+                <Label htmlFor="messages-enabled" className="font-medium">Enable message notifications</Label>
                 <Switch
                   id="messages-enabled"
                   checked={config.messages.enabled}
-                  onCheckedChange={(checked) => updateMessageSettings('enabled', checked)}
+                  onCheckedChange={(checked) => updateConfig('messages', 'enabled', checked)}
                 />
               </div>
 
-              <div className="flex items-center justify-between">
-                <Label htmlFor="messages-sound">Play sound</Label>
-                <Switch
-                  id="messages-sound"
-                  checked={config.messages.sound}
-                  onCheckedChange={(checked) => updateMessageSettings('sound', checked)}
-                />
-              </div>
+              {config.messages.enabled && (
+                <>
+                  <Separator className="bg-white/20" />
+                  <div className="space-y-4 pl-4 border-l-2 border-blue-200">
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="messages-sound">Sound notifications</Label>
+                      <Switch
+                        id="messages-sound"
+                        checked={config.messages.sound}
+                        onCheckedChange={(checked) => updateConfig('messages', 'sound', checked)}
+                      />
+                    </div>
 
-              <div className="flex items-center justify-between">
-                <Label htmlFor="messages-desktop">Desktop notifications</Label>
-                <Switch
-                  id="messages-desktop"
-                  checked={config.messages.desktop}
-                  onCheckedChange={(checked) => updateMessageSettings('desktop', checked)}
-                />
-              </div>
+                    {config.messages.sound && (
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium">Notification Sound</Label>
+                        <div className="flex items-center space-x-2">
+                          <Select
+                            value={config.messages.soundType}
+                            onValueChange={(value) => updateConfig('messages', 'soundType', value)}
+                          >
+                            <SelectTrigger className="bg-white/20 border-white/30 backdrop-blur-sm">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent className="glass-card">
+                              {soundOptions.map((option) => (
+                                <SelectItem key={option.value} value={option.value}>
+                                  {option.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => playSound(config.messages.soundType, 'messages')}
+                            className="bg-white/20 border-white/30 hover:bg-white/30"
+                            title="Test Sound"
+                          >
+                            <Play className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    )}
 
-              <div className="flex items-center justify-between">
-                <Label htmlFor="messages-email">Email notifications</Label>
-                <Switch
-                  id="messages-email"
-                  checked={config.messages.email}
-                  onCheckedChange={(checked) => updateMessageSettings('email', checked)}
-                />
-              </div>
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="messages-desktop">Desktop notifications</Label>
+                      <Switch
+                        id="messages-desktop"
+                        checked={config.messages.desktop}
+                        onCheckedChange={(checked) => updateConfig('messages', 'desktop', checked)}
+                        disabled={permissionStatus !== 'granted'}
+                      />
+                    </div>
 
-              <div className="flex items-center justify-between">
-                <Label>Sound type</Label>
-                <Select
-                  value={config.messages.soundType}
-                  onValueChange={(value) => updateMessageSettings('soundType', value)}
-                >
-                  <SelectTrigger className="w-32">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="default">Default</SelectItem>
-                    <SelectItem value="chime">Chime</SelectItem>
-                    <SelectItem value="ding">Ding</SelectItem>
-                    <SelectItem value="pop">Pop</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </div>
-
-          <Separator />
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="messages-email">Email notifications</Label>
+                      <Switch
+                        id="messages-email"
+                        checked={config.messages.email}
+                        onCheckedChange={(checked) => updateConfig('messages', 'email', checked)}
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
 
           {/* Call Notifications */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold flex items-center space-x-2">
-                <Phone className="w-5 h-5" />
+          <Card className="glass-card border-white/20">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg flex items-center space-x-2">
+                <Phone className="w-5 h-5 text-green-600" />
                 <span>Call Notifications</span>
-              </h3>
-              <Button
-                onClick={() => testNotification('call')}
-                variant="outline"
-                size="sm"
-              >
-                Test
-              </Button>
-            </div>
-            
-            <div className="space-y-4">
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
-                <Label htmlFor="calls-enabled">Enable call notifications</Label>
+                <Label htmlFor="calls-enabled" className="font-medium">Enable call notifications</Label>
                 <Switch
                   id="calls-enabled"
                   checked={config.calls.enabled}
-                  onCheckedChange={(checked) => updateCallSettings('enabled', checked)}
+                  onCheckedChange={(checked) => updateConfig('calls', 'enabled', checked)}
                 />
               </div>
 
-              <div className="flex items-center justify-between">
-                <Label htmlFor="calls-sound">Play ringtone</Label>
-                <Switch
-                  id="calls-sound"
-                  checked={config.calls.sound}
-                  onCheckedChange={(checked) => updateCallSettings('sound', checked)}
-                />
-              </div>
+              {config.calls.enabled && (
+                <>
+                  <Separator className="bg-white/20" />
+                  <div className="space-y-4 pl-4 border-l-2 border-green-200">
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="calls-sound">Ringtone</Label>
+                      <Switch
+                        id="calls-sound"
+                        checked={config.calls.sound}
+                        onCheckedChange={(checked) => updateConfig('calls', 'sound', checked)}
+                      />
+                    </div>
 
-              <div className="flex items-center justify-between">
-                <Label htmlFor="calls-desktop">Desktop notifications</Label>
-                <Switch
-                  id="calls-desktop"
-                  checked={config.calls.desktop}
-                  onCheckedChange={(checked) => updateCallSettings('desktop', checked)}
-                />
-              </div>
+                    {config.calls.sound && (
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium">Ringtone Sound</Label>
+                        <div className="flex items-center space-x-2">
+                          <Select
+                            value={config.calls.soundType}
+                            onValueChange={(value) => updateConfig('calls', 'soundType', value)}
+                          >
+                            <SelectTrigger className="bg-white/20 border-white/30 backdrop-blur-sm">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent className="glass-card">
+                              {ringtoneOptions.map((option) => (
+                                <SelectItem key={option.value} value={option.value}>
+                                  {option.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => playSound(config.calls.soundType, 'calls')}
+                            className="bg-white/20 border-white/30 hover:bg-white/30"
+                            title="Test Ringtone"
+                          >
+                            <Play className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    )}
 
-              <div className="flex items-center justify-between">
-                <Label htmlFor="calls-vibration">Vibration (mobile)</Label>
-                <Switch
-                  id="calls-vibration"
-                  checked={config.calls.vibration}
-                  onCheckedChange={(checked) => updateCallSettings('vibration', checked)}
-                />
-              </div>
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="calls-desktop">Desktop notifications</Label>
+                      <Switch
+                        id="calls-desktop"
+                        checked={config.calls.desktop}
+                        onCheckedChange={(checked) => updateConfig('calls', 'desktop', checked)}
+                        disabled={permissionStatus !== 'granted'}
+                      />
+                    </div>
 
-              <div className="flex items-center justify-between">
-                <Label>Ringtone</Label>
-                <Select
-                  value={config.calls.soundType}
-                  onValueChange={(value) => updateCallSettings('soundType', value)}
-                >
-                  <SelectTrigger className="w-32">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="ringtone">Default</SelectItem>
-                    <SelectItem value="classic">Classic</SelectItem>
-                    <SelectItem value="modern">Modern</SelectItem>
-                    <SelectItem value="minimal">Minimal</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </div>
-
-          <Separator />
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="calls-vibration">Vibration (mobile)</Label>
+                      <Switch
+                        id="calls-vibration"
+                        checked={config.calls.vibration}
+                        onCheckedChange={(checked) => updateConfig('calls', 'vibration', checked)}
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
 
           {/* General Settings */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">General Settings</h3>
-            
-            <div className="space-y-4">
+          <Card className="glass-card border-white/20">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg flex items-center space-x-2">
+                <Clock className="w-5 h-5 text-purple-600" />
+                <span>General Settings</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
-                <Label htmlFor="do-not-disturb">Do Not Disturb</Label>
+                <Label htmlFor="do-not-disturb" className="font-medium">Do Not Disturb</Label>
                 <Switch
                   id="do-not-disturb"
                   checked={config.general.doNotDisturb}
-                  onCheckedChange={(checked) => updateGeneralSettings('doNotDisturb', checked)}
+                  onCheckedChange={(checked) => updateConfig('general', 'doNotDisturb', checked)}
                 />
               </div>
 
-              <div className="flex items-center justify-between">
-                <Label htmlFor="quiet-hours">Quiet Hours</Label>
-                <Switch
-                  id="quiet-hours"
-                  checked={config.general.quietHours.enabled}
-                  onCheckedChange={(checked) => updateQuietHours('enabled', checked)}
-                />
-              </div>
+              <Separator className="bg-white/20" />
 
-              {config.general.quietHours.enabled && (
-                <div className="flex items-center justify-between pl-4">
-                  <Label>Time range</Label>
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="time"
-                      value={config.general.quietHours.start}
-                      onChange={(e) => updateQuietHours('start', e.target.value)}
-                      className="px-2 py-1 border rounded"
-                    />
-                    <span className="text-gray-500">to</span>
-                    <input
-                      type="time"
-                      value={config.general.quietHours.end}
-                      onChange={(e) => updateQuietHours('end', e.target.value)}
-                      className="px-2 py-1 border rounded"
-                    />
-                  </div>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="quiet-hours" className="font-medium">Quiet Hours</Label>
+                  <Switch
+                    id="quiet-hours"
+                    checked={config.general.quietHours.enabled}
+                    onCheckedChange={(checked) => updateQuietHours('enabled', checked)}
+                  />
                 </div>
-              )}
+
+                {config.general.quietHours.enabled && (
+                  <div className="pl-4 border-l-2 border-purple-200 space-y-3">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label className="text-sm font-medium">Start Time</Label>
+                        <input
+                          type="time"
+                          value={config.general.quietHours.start}
+                          onChange={(e) => updateQuietHours('start', e.target.value)}
+                          className="w-full px-3 py-2 rounded-md bg-white/20 border border-white/30 backdrop-blur-sm focus:bg-white/30 focus:border-purple-400 focus:outline-none"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium">End Time</Label>
+                        <input
+                          type="time"
+                          value={config.general.quietHours.end}
+                          onChange={(e) => updateQuietHours('end', e.target.value)}
+                          className="w-full px-3 py-2 rounded-md bg-white/20 border border-white/30 backdrop-blur-sm focus:bg-white/30 focus:border-purple-400 focus:outline-none"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <Separator className="bg-white/20" />
 
               <div className="flex items-center justify-between">
-                <Label htmlFor="show-preview">Show message preview</Label>
+                <Label htmlFor="show-preview" className="font-medium">Show message preview</Label>
                 <Switch
                   id="show-preview"
                   checked={config.general.showPreview}
-                  onCheckedChange={(checked) => updateGeneralSettings('showPreview', checked)}
+                  onCheckedChange={(checked) => updateConfig('general', 'showPreview', checked)}
                 />
               </div>
-            </div>
-          </div>
-        </div>
+            </CardContent>
+          </Card>
 
-        <div className="flex justify-end space-x-2 mt-6">
-          <Button variant="outline" onClick={onClose}>
-            Close
-          </Button>
+          {/* Save Button */}
+          <div className="flex justify-end pt-4 border-t border-white/20">
+            <Button
+              onClick={() => {
+                toast({
+                  title: 'Settings Saved',
+                  description: 'Your notification preferences have been updated.',
+                });
+                onClose();
+              }}
+              className="bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white px-8 py-2 shadow-lg hover:shadow-xl transition-all duration-300"
+            >
+              Save Settings
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
