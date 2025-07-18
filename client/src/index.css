@@ -95,18 +95,51 @@
   }
 }
 
-/* Force all icons to be black for visibility */
-.lucide, svg {
-  color: #000000 !important;
-  fill: currentColor !important;
+/* Proper icon color management */
+.lucide {
+  color: currentColor;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
 }
 
-/* Override specific icon colors that might be hiding */
-.text-white svg,
-.text-gray-400 svg,
-.text-gray-500 svg,
-.text-gray-600 svg,
-.text-blue-100 svg {
-  color: #000000 !important;
-  fill: #000000 !important;
+/* White background icons should be dark */
+.bg-white .lucide,
+.bg-gray-50 .lucide,
+.bg-gray-100 .lucide {
+  color: #374151;
+}
+
+/* Dark background icons should be light */
+.bg-blue-600 .lucide,
+.bg-gray-800 .lucide,
+.bg-gray-900 .lucide,
+.text-white .lucide {
+  color: #ffffff;
+}
+
+/* Button specific icon colors */
+.btn-primary .lucide {
+  color: #ffffff;
+}
+
+.btn-secondary .lucide {
+  color: #374151;
+}
+
+/* Status icons with proper colors */
+.status-online .lucide {
+  color: #10b981;
+}
+
+.status-away .lucide {
+  color: #f59e0b;
+}
+
+.status-busy .lucide {
+  color: #ef4444;
+}
+
+.status-offline .lucide {
+  color: #6b7280;
 }

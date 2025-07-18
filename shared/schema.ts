@@ -39,6 +39,7 @@ export const users = pgTable("users", {
   jobTitle: varchar("job_title"),
   location: varchar("location"),
   status: varchar("status").default("offline"), // online, offline, away, busy
+  zinCode: varchar("zin_code", { length: 12 }),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

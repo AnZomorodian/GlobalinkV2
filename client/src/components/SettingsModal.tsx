@@ -109,11 +109,11 @@ export default function SettingsModal({ user, onClose }: SettingsModalProps) {
           <Tabs defaultValue="profile" className="w-full flex">
             <TabsList className="flex flex-col h-full w-64 bg-gray-50">
               <TabsTrigger value="profile" className="w-full justify-start">
-                <i className="fas fa-user mr-3"></i>
+                <User className="mr-3 h-4 w-4" />
                 Profile
               </TabsTrigger>
               <TabsTrigger value="notifications" className="w-full justify-start">
-                <i className="fas fa-bell mr-3"></i>
+                <Bell className="mr-3 h-4 w-4" />
                 Notifications
               </TabsTrigger>
               <TabsTrigger value="privacy" className="w-full justify-start">
@@ -121,15 +121,19 @@ export default function SettingsModal({ user, onClose }: SettingsModalProps) {
                 Privacy
               </TabsTrigger>
               <TabsTrigger value="appearance" className="w-full justify-start">
-                <i className="fas fa-palette mr-3"></i>
+                <Palette className="mr-3 h-4 w-4" />
                 Appearance
               </TabsTrigger>
+              <TabsTrigger value="team" className="w-full justify-start">
+                <Building className="mr-3 h-4 w-4" />
+                Team Management
+              </TabsTrigger>
               <TabsTrigger value="account" className="w-full justify-start">
-                <i className="fas fa-cog mr-3"></i>
+                <Settings className="mr-3 h-4 w-4" />
                 Account
               </TabsTrigger>
               <TabsTrigger value="about" className="w-full justify-start">
-                <Info className="w-4 h-4 mr-3 text-black" />
+                <Info className="w-4 h-4 mr-3" />
                 About
               </TabsTrigger>
             </TabsList>
@@ -216,6 +220,40 @@ export default function SettingsModal({ user, onClose }: SettingsModalProps) {
                         />
                       </div>
                       <div className="md:col-span-2">
+                        <Label htmlFor="bio">Bio</Label>
+                        <Textarea
+                          id="bio"
+                          placeholder="Tell us about yourself..."
+                          value={profileData.bio}
+                          onChange={(e) => setProfileData(prev => ({ ...prev, bio: e.target.value }))}
+                          className="min-h-[80px] resize-none"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="companyName">Company Name</Label>
+                        <Input
+                          id="companyName"
+                          value={profileData.companyName}
+                          onChange={(e) => setProfileData(prev => ({ ...prev, companyName: e.target.value }))}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="jobTitle">Job Title</Label>
+                        <Input
+                          id="jobTitle"
+                          value={profileData.jobTitle}
+                          onChange={(e) => setProfileData(prev => ({ ...prev, jobTitle: e.target.value }))}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="location">Location</Label>
+                        <Input
+                          id="location"
+                          value={profileData.location}
+                          onChange={(e) => setProfileData(prev => ({ ...prev, location: e.target.value }))}
+                        />
+                      </div>
+                      <div>
                         <Label htmlFor="userId">User ID</Label>
                         <Input
                           id="userId"
@@ -426,6 +464,69 @@ export default function SettingsModal({ user, onClose }: SettingsModalProps) {
                         <Save className="w-4 h-4 mr-2" />
                         Save Appearance Settings
                       </Button>
+                    </div>
+                  </div>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="team" className="mt-0">
+                <div className="max-w-2xl">
+                  <h3 className="text-lg font-semibold text-black mb-6">Team Management</h3>
+                  
+                  <div className="space-y-6">
+                    <div className="bg-blue-50 rounded-lg p-6">
+                      <h4 className="font-medium text-black mb-3">Your Zin Code</h4>
+                      <p className="text-sm text-gray-600 mb-4">
+                        Your unique Zin Code is used for team identification and management. 
+                        Share this code with team members to identify your organization.
+                      </p>
+                      
+                      <div className="flex items-center space-x-3">
+                        <div className="bg-white px-4 py-2 rounded-lg border border-gray-200 font-mono text-lg tracking-wider">
+                          {user.zinCode || "Loading..."}
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            navigator.clipboard.writeText(user.zinCode || "");
+                            toast({
+                              title: "Copied to Clipboard",
+                              description: "Your Zin Code has been copied to the clipboard.",
+                            });
+                          }}
+                        >
+                          Copy
+                        </Button>
+                      </div>
+                      
+                      <div className="mt-4 p-3 bg-yellow-50 rounded-lg">
+                        <p className="text-sm text-yellow-800">
+                          <strong>Note:</strong> This code is automatically generated and cannot be changed. 
+                          It's used for team identification and should be kept confidential.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="bg-gray-50 rounded-lg p-6">
+                      <h4 className="font-medium text-black mb-3">Team Features</h4>
+                      <ul className="text-sm text-black space-y-2">
+                        <li>• Unique team identification across the platform</li>
+                        <li>• Secure communication within your organization</li>
+                        <li>• Team-based contact management</li>
+                        <li>• Organizational structure visibility</li>
+                        <li>• Enhanced security and privacy controls</li>
+                      </ul>
+                    </div>
+
+                    <div className="bg-green-50 rounded-lg p-6">
+                      <h4 className="font-medium text-black mb-3">How to Use</h4>
+                      <ol className="text-sm text-black space-y-2">
+                        <li>1. Share your Zin Code with team members</li>
+                        <li>2. Team members can use this code to identify your organization</li>
+                        <li>3. All team communications are secured and organized</li>
+                        <li>4. Use contact search to find team members by their IDs</li>
+                      </ol>
                     </div>
                   </div>
                 </div>

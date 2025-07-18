@@ -26,7 +26,7 @@ export default function Sidebar({ currentUser, selectedContactId, onContactSelec
   const [searchQuery, setSearchQuery] = useState("");
   const [showAddContact, setShowAddContact] = useState(false);
   const [addContactId, setAddContactId] = useState("");
-  const [searchNotFound, setSearchNotFound] = useState(false);
+
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -51,16 +51,9 @@ export default function Sidebar({ currentUser, selectedContactId, onContactSelec
 
   // Search user by ID for add contact
   const { data: userById, isLoading: userByIdLoading } = useQuery({
-    queryKey: ["/api/users/search", addContactId],
+    queryKey: ["/api/users", addContactId],
     enabled: addContactId.length > 0,
     retry: false,
-    onSuccess: (data) => {
-      if (data.length === 0) {
-        setSearchNotFound(true);
-      } else {
-        setSearchNotFound(false);
-      }
-    },
   });
 
   // Add contact mutation
@@ -257,7 +250,6 @@ export default function Sidebar({ currentUser, selectedContactId, onContactSelec
                 value={addContactId}
                 onChange={(e) => {
                   setAddContactId(e.target.value);
-                  setSearchNotFound(false);
                 }}
                 className="text-black"
               />
@@ -269,43 +261,44 @@ export default function Sidebar({ currentUser, selectedContactId, onContactSelec
               </div>
             )}
             
-            {searchNotFound && addContactId.length > 0 && (
+            {!userByIdLoading && !userById && addContactId.length > 0 && (
               <div className="flex items-center space-x-2 text-red-600 bg-red-50 p-3 rounded">
                 <AlertCircle className="w-4 h-4 text-red-600" />
                 <span className="text-sm">I can't find the user with ID "{addContactId}"</span>
               </div>
             )}
             
-            {userById && userById.length > 0 && (
+            {userById && (
               <div className="max-h-60 overflow-y-auto">
-                {userById.map((user: any) => (
-                  <div key={user.id} className="flex items-center justify-between p-3 hover:bg-gray-50 rounded border">
-                    <div className="flex items-center space-x-3">
-                      <Avatar className="w-10 h-10">
-                        <AvatarImage src={user.profileImageUrl || ""} />
-                        <AvatarFallback>
-                          {user.firstName?.[0]}{user.lastName?.[0]}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p className="font-medium text-black">{user.firstName} {user.lastName}</p>
-                        <p className="text-sm text-gray-500">{user.email}</p>
-                        <p className="text-xs text-gray-400">ID: {user.id}</p>
-                      </div>
+                <div className="flex items-center justify-between p-3 hover:bg-gray-50 rounded border">
+                  <div className="flex items-center space-x-3">
+                    <Avatar className="w-10 h-10">
+                      <AvatarImage src={userById.profileImageUrl || ""} />
+                      <AvatarFallback>
+                        {userById.firstName?.[0]}{userById.lastName?.[0]}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="font-medium text-black">{userById.firstName} {userById.lastName}</p>
+                      <p className="text-sm text-gray-500">{userById.email}</p>
+                      <p className="text-xs text-gray-400">ID: {userById.id}</p>
+                      {userById.zinCode && (
+                        <p className="text-xs text-blue-600 font-mono">Zin: {userById.zinCode}</p>
+                      )}
                     </div>
-                    <Button
-                      size="sm"
-                      onClick={() => {
-                        handleAddContact(user.id);
-                        setShowAddContact(false);
-                        setAddContactId("");
-                      }}
-                      disabled={addContactMutation.isPending}
-                    >
-                      Add
-                    </Button>
                   </div>
-                ))}
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      handleAddContact(userById.id);
+                      setShowAddContact(false);
+                      setAddContactId("");
+                    }}
+                    disabled={addContactMutation.isPending}
+                  >
+                    Add
+                  </Button>
+                </div>
               </div>
             )}
           </div>

@@ -58,15 +58,22 @@ function updateUserSession(
   user.expires_at = user.claims?.exp;
 }
 
+function generateZinCode(): string {
+  return Math.random().toString(36).substring(2, 8).toUpperCase() + 
+         Math.random().toString(36).substring(2, 8).toUpperCase();
+}
+
 async function upsertUser(
   claims: any,
 ) {
+  const existingUser = await storage.getUser(claims["sub"]);
   await storage.upsertUser({
     id: claims["sub"],
     email: claims["email"],
     firstName: claims["first_name"],
     lastName: claims["last_name"],
     profileImageUrl: claims["profile_image_url"],
+    zinCode: existingUser?.zinCode || generateZinCode(),
   });
 }
 
