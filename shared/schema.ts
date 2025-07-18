@@ -55,6 +55,7 @@ export const messages = pgTable("messages", {
   content: text("content").notNull(),
   messageType: varchar("message_type").default("text"), // text, file, image
   fileUrl: varchar("file_url"),
+  replyToId: integer("reply_to_id"),
   isRead: boolean("is_read").default(false),
   createdAt: timestamp("created_at").defaultNow(),
 });
@@ -90,6 +91,11 @@ export const messagesRelations = relations(messages, ({ one }) => ({
     fields: [messages.receiverId],
     references: [users.id],
     relationName: "receivedMessages",
+  }),
+  replyTo: one(messages, {
+    fields: [messages.replyToId],
+    references: [messages.id],
+    relationName: "messageReplies",
   }),
 }));
 

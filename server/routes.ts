@@ -46,6 +46,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Add profile update route
+  app.put('/api/auth/user', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const updateData = req.body;
+      
+      const updatedUser = await storage.upsertUser({
+        id: userId,
+        ...updateData,
+      });
+      
+      res.json(updatedUser);
+    } catch (error) {
+      console.error("Error updating user:", error);
+      res.status(500).json({ message: "Failed to update user" });
+    }
+  });
+
   app.put('/api/users/status', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
@@ -58,7 +76,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await storage.updateUserStatus(userId, status);
       
       // Broadcast status update to connected clients
-      for (const [clientId, client] of connectedClients) {
+      connectedClients.forEach((client, clientId) => {
         if (client.readyState === WebSocket.OPEN && clientId !== userId) {
           client.send(JSON.stringify({
             type: 'statusUpdate',
@@ -66,7 +84,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             status,
           }));
         }
-      }
+      });
       
       res.json({ success: true });
     } catch (error) {
@@ -179,6 +197,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }));
       }
       
+      // Also send to sender for real-time update
+      const senderSocket = connectedClients.get(userId);
+      if (senderSocket && senderSocket.readyState === WebSocket.OPEN) {
+        senderSocket.send(JSON.stringify({
+          type: 'messageSent',
+          message,
+        }));
+      }
+      
       res.json(message);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -263,7 +290,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             await storage.updateUserStatus(message.userId, 'online');
             
             // Broadcast status update
-            for (const [clientId, client] of connectedClients) {
+            connectedClients.forEach((client, clientId) => {
               if (client.readyState === WebSocket.OPEN && clientId !== message.userId) {
                 client.send(JSON.stringify({
                   type: 'statusUpdate',
@@ -271,7 +298,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   status: 'online',
                 }));
               }
-            }
+            });
             break;
 
           case 'webrtc-offer':
@@ -300,7 +327,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         await storage.updateUserStatus(ws.userId, 'offline');
         
         // Broadcast status update
-        for (const [clientId, client] of connectedClients) {
+        connectedClients.forEach((client, clientId) => {
           if (client.readyState === WebSocket.OPEN) {
             client.send(JSON.stringify({
               type: 'statusUpdate',
@@ -308,7 +335,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               status: 'offline',
             }));
           }
-        }
+        });
       }
     });
   });

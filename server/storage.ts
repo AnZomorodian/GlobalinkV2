@@ -176,7 +176,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getMessages(userId: string, contactId: string, limit = 50): Promise<(Message & { sender: User, receiver: User })[]> {
-    return await db
+    const messageList = await db
       .select({
         id: messages.id,
         senderId: messages.senderId,
@@ -184,23 +184,11 @@ export class DatabaseStorage implements IStorage {
         content: messages.content,
         messageType: messages.messageType,
         fileUrl: messages.fileUrl,
+        replyToId: messages.replyToId,
         isRead: messages.isRead,
         createdAt: messages.createdAt,
-        sender: {
-          id: users.id,
-          firstName: users.firstName,
-          lastName: users.lastName,
-          profileImageUrl: users.profileImageUrl,
-        },
-        receiver: {
-          id: users.id,
-          firstName: users.firstName,
-          lastName: users.lastName,
-          profileImageUrl: users.profileImageUrl,
-        },
       })
       .from(messages)
-      .innerJoin(users, eq(messages.senderId, users.id))
       .where(
         and(
           or(
@@ -211,6 +199,21 @@ export class DatabaseStorage implements IStorage {
       )
       .orderBy(desc(messages.createdAt))
       .limit(limit);
+
+    // Get sender and receiver details for each message
+    const enrichedMessages = await Promise.all(
+      messageList.map(async (message) => {
+        const [sender] = await db.select().from(users).where(eq(users.id, message.senderId));
+        const [receiver] = await db.select().from(users).where(eq(users.id, message.receiverId));
+        return {
+          ...message,
+          sender: sender || null,
+          receiver: receiver || null,
+        };
+      })
+    );
+
+    return enrichedMessages.filter(msg => msg.sender && msg.receiver) as (Message & { sender: User, receiver: User })[];
   }
 
   async markMessageAsRead(messageId: number): Promise<void> {
@@ -262,7 +265,7 @@ export class DatabaseStorage implements IStorage {
     const contactMap = new Map();
 
     for (const msg of allMessages) {
-      if (!contactMap.has(msg.contactId) || contactMap.get(msg.contactId).createdAt < msg.createdAt) {
+      if (!contactMap.has(msg.contactId) || (contactMap.get(msg.contactId).createdAt && msg.createdAt && contactMap.get(msg.contactId).createdAt < msg.createdAt)) {
         contactMap.set(msg.contactId, msg);
       }
     }

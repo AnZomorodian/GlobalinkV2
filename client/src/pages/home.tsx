@@ -3,6 +3,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
+import { useQueryClient } from "@tanstack/react-query";
 import Sidebar from "@/components/Sidebar";
 import ChatArea from "@/components/ChatArea";
 import ContactInfo from "@/components/ContactInfo";
@@ -12,6 +13,7 @@ import CallModal from "@/components/CallModal";
 export default function Home() {
   const { user, isLoading } = useAuth();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [selectedContactId, setSelectedContactId] = useState<string | null>(null);
   const [showContactInfo, setShowContactInfo] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -27,10 +29,23 @@ export default function Home() {
       
       switch (data.type) {
         case 'newMessage':
-          toast({
-            title: "New Message",
-            description: `Message from ${data.message.sender?.firstName}`,
-          });
+          // Invalidate queries to refresh data
+          queryClient.invalidateQueries({ queryKey: ["/api/messages", selectedContactId] });
+          queryClient.invalidateQueries({ queryKey: ["/api/chats"] });
+          
+          // Show notification if not currently viewing the sender
+          if (data.message.senderId !== selectedContactId) {
+            toast({
+              title: "New Message",
+              description: `Message from ${data.message.sender?.firstName}`,
+            });
+          }
+          break;
+          
+        case 'messageSent':
+          // Refresh messages for sender
+          queryClient.invalidateQueries({ queryKey: ["/api/messages", selectedContactId] });
+          queryClient.invalidateQueries({ queryKey: ["/api/chats"] });
           break;
           
         case 'incomingCall':
@@ -38,11 +53,13 @@ export default function Home() {
           break;
           
         case 'statusUpdate':
-          // Handle status updates for contacts
+          // Refresh contacts to update status
+          queryClient.invalidateQueries({ queryKey: ["/api/contacts"] });
+          queryClient.invalidateQueries({ queryKey: ["/api/chats"] });
           break;
       }
     }
-  }, [lastMessage, toast]);
+  }, [lastMessage, toast, selectedContactId, queryClient]);
 
   // Redirect to home if not authenticated
   useEffect(() => {

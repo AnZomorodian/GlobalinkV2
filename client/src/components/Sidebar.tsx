@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import type { User } from "@shared/schema";
 
 interface SidebarProps {
@@ -75,6 +77,38 @@ export default function Sidebar({ currentUser, selectedContactId, onContactSelec
     },
   });
 
+  // Update status mutation
+  const updateStatusMutation = useMutation({
+    mutationFn: async (status: string) => {
+      await apiRequest("PUT", "/api/users/status", { status });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      toast({
+        title: "Success",
+        description: "Status updated successfully",
+      });
+    },
+    onError: (error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Error",
+        description: "Failed to update status",
+        variant: "destructive",
+      });
+    },
+  });
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'online': return 'bg-green-500';
@@ -122,7 +156,31 @@ export default function Sidebar({ currentUser, selectedContactId, onContactSelec
               <span className="text-sm font-medium text-gray-900">
                 {currentUser.firstName} {currentUser.lastName}
               </span>
-              <div className={`w-2 h-2 rounded-full ${getStatusColor(currentUser.status || 'offline')}`}></div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                    <div className={`w-2 h-2 rounded-full ${getStatusColor(currentUser.status || 'offline')}`}></div>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem onClick={() => updateStatusMutation.mutate('online')}>
+                    <div className="w-2 h-2 rounded-full bg-green-500 mr-2"></div>
+                    Online
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => updateStatusMutation.mutate('away')}>
+                    <div className="w-2 h-2 rounded-full bg-yellow-500 mr-2"></div>
+                    Away
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => updateStatusMutation.mutate('busy')}>
+                    <div className="w-2 h-2 rounded-full bg-red-500 mr-2"></div>
+                    Busy
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => updateStatusMutation.mutate('offline')}>
+                    <div className="w-2 h-2 rounded-full bg-gray-300 mr-2"></div>
+                    Offline
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
             <p className="text-xs text-gray-500">ID: {currentUser.id}</p>
           </div>
