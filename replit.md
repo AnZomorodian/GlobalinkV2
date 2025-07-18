@@ -135,6 +135,15 @@ The application follows a monorepo structure with shared TypeScript types, makin
 
 ## Recent Changes
 
+### January 2025 - Voice Messages & UI Enhancement Complete
+- **✓ Logo Removal**: Removed logo from welcome page, keeping only text as requested
+- **✓ Voice Message Player**: Implemented advanced voice message player with play/pause controls, progress bar, and time display
+- **✓ Enhanced Contact Management**: Added comprehensive ContactList component with search, actions, and status indicators
+- **✓ Group Manager**: Built complete group management system with creation, member selection, and administration
+- **✓ Notification Settings**: Implemented fully functional notification settings with browser permissions, sound controls, and quiet hours
+- **✓ Improved Sidebar**: Enhanced sidebar with 4-button layout including contacts, groups, and notifications
+- **✓ Professional Styling**: Updated all components with modern glass-morphism design and improved user experience
+
 ### January 2025 - Enhanced User Discovery & Comprehensive Documentation
 - **✓ Auto-Discovery System**: Newly signed users automatically appear in recent chats for better discoverability
 - **✓ Enhanced Add Contact**: Added discoverable users section with improved contact management interface

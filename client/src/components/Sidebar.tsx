@@ -11,7 +11,10 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { UserPlus, Settings, Search, LogOut, Plus, X, AlertCircle, MessageCircle, Users, MessageSquarePlus } from "lucide-react";
+import { UserPlus, Settings, Search, LogOut, Plus, X, AlertCircle, MessageCircle, Users, MessageSquarePlus, Bell } from "lucide-react";
+import { ContactList } from "./ContactList";
+import { GroupManager } from "./GroupManager";
+import { NotificationSettings } from "./NotificationSettings";
 import GlobalinkLogo from "./GlobalinkLogo";
 import type { User } from "@shared/schema";
 
@@ -26,6 +29,9 @@ export default function Sidebar({ currentUser, selectedContactId, onContactSelec
   const [searchQuery, setSearchQuery] = useState("");
   const [showAddContact, setShowAddContact] = useState(false);
   const [addContactId, setAddContactId] = useState("");
+  const [showContactList, setShowContactList] = useState(false);
+  const [showGroupManager, setShowGroupManager] = useState(false);
+  const [showNotificationSettings, setShowNotificationSettings] = useState(false);
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -252,18 +258,41 @@ export default function Sidebar({ currentUser, selectedContactId, onContactSelec
             </DialogTrigger>
           </Dialog>
           
-          <Button variant="ghost" size="sm" className="h-10 w-10 bg-white/20 hover:bg-white/30 border border-white/20 rounded-xl transition-all duration-200">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => setShowContactList(true)}
+            className="h-10 w-10 bg-white/20 hover:bg-white/30 border border-white/20 rounded-xl transition-all duration-200"
+            title="Contact List"
+          >
             <Users className="w-4 h-4" />
           </Button>
           
-          <Button variant="ghost" size="sm" className="h-10 w-10 bg-white/20 hover:bg-white/30 border border-white/20 rounded-xl transition-all duration-200" disabled>
-            <MessageSquarePlus className="w-4 h-4 opacity-50" />
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => setShowGroupManager(true)}
+            className="h-10 w-10 bg-white/20 hover:bg-white/30 border border-white/20 rounded-xl transition-all duration-200"
+            title="Groups"
+          >
+            <MessageSquarePlus className="w-4 h-4" />
+          </Button>
+          
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => setShowNotificationSettings(true)}
+            className="h-10 w-10 bg-white/20 hover:bg-white/30 border border-white/20 rounded-xl transition-all duration-200"
+            title="Notification Settings"
+          >
+            <Bell className="w-4 h-4" />
           </Button>
         </div>
-        <div className="flex items-center justify-between mt-2 text-xs text-gray-400">
-          <span>Add Contact</span>
-          <span>Contacts</span>
-          <span>Group</span>
+        <div className="grid grid-cols-4 gap-1 mt-2 text-xs text-gray-400">
+          <span className="text-center">Add Contact</span>
+          <span className="text-center">Contacts</span>
+          <span className="text-center">Groups</span>
+          <span className="text-center">Notifications</span>
         </div>
       </div>
 
@@ -516,6 +545,28 @@ export default function Sidebar({ currentUser, selectedContactId, onContactSelec
           </div>
         )}
       </div>
+
+      {/* Contact List Dialog */}
+      <ContactList
+        isOpen={showContactList}
+        onClose={() => setShowContactList(false)}
+        onContactSelect={onContactSelect}
+        currentUser={currentUser}
+      />
+
+      {/* Group Manager Dialog */}
+      <GroupManager
+        isOpen={showGroupManager}
+        onClose={() => setShowGroupManager(false)}
+        onGroupSelect={onContactSelect}
+        currentUser={currentUser}
+      />
+
+      {/* Notification Settings Dialog */}
+      <NotificationSettings
+        isOpen={showNotificationSettings}
+        onClose={() => setShowNotificationSettings(false)}
+      />
     </div>
   );
 }

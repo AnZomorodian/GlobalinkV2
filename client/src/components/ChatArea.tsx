@@ -15,7 +15,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Reply, Copy, Paperclip, Send, Smile, Search, Phone, Video, Info, MoreHorizontal } from "lucide-react";
 import EnhancedChatInput from './EnhancedChatInput';
-import VoiceMessagePlayer from './VoiceMessagePlayer';
+import { VoiceMessagePlayer } from './VoiceMessagePlayer';
 import ModernMessageBubble from './ModernMessageBubble';
 import GlobalinkLogo from "./GlobalinkLogo";
 import type { User, Message } from "@shared/schema";
@@ -206,9 +206,6 @@ export default function ChatArea({
         
         <div className="flex-1 flex items-center justify-center relative z-10">
           <div className="text-center space-y-8 animate-fade-in max-w-2xl mx-auto px-8">
-            <div className="mx-auto mb-8 floating-element">
-              <GlobalinkLogo size="xl" showText={false} className="drop-shadow-2xl" />
-            </div>
             <div className="space-y-4">
               <h3 className="text-4xl font-bold gradient-text">Welcome to GLOBALINK</h3>
               <p className="text-gray-600 text-xl font-medium">Your Professional Communication Hub</p>
@@ -369,7 +366,6 @@ export default function ChatArea({
                         <VoiceMessagePlayer 
                           audioData={message.audioData.audio}
                           duration={message.audioData.duration}
-                          isOwn={isOwn}
                         />
                       ) : (
                         <p className={`text-sm leading-relaxed message-text ${

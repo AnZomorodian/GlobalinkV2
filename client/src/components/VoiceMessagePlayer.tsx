@@ -1,133 +1,120 @@
-import { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Play, Pause, Volume2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
-import { Badge } from '@/components/ui/badge';
-import { Play, Pause, Download, Volume2 } from 'lucide-react';
 
 interface VoiceMessagePlayerProps {
   audioData: string;
-  duration: number;
-  isOwn?: boolean;
+  duration?: number;
+  className?: string;
 }
 
-export default function VoiceMessagePlayer({ audioData, duration, isOwn = false }: VoiceMessagePlayerProps) {
+export function VoiceMessagePlayer({ audioData, duration, className = '' }: VoiceMessagePlayerProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
-  const [audioLoaded, setAudioLoaded] = useState(false);
-  
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  
+  const [totalDuration, setTotalDuration] = useState(duration || 0);
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const progressRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
-    const audio = new Audio(audioData);
-    audioRef.current = audio;
-    
-    const handleLoadedData = () => setAudioLoaded(true);
-    const handleTimeUpdate = () => setCurrentTime(audio.currentTime);
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    const updateTime = () => setCurrentTime(audio.currentTime);
+    const updateDuration = () => setTotalDuration(audio.duration);
     const handleEnded = () => {
       setIsPlaying(false);
       setCurrentTime(0);
     };
-    
-    audio.addEventListener('loadeddata', handleLoadedData);
-    audio.addEventListener('timeupdate', handleTimeUpdate);
+
+    audio.addEventListener('timeupdate', updateTime);
+    audio.addEventListener('loadedmetadata', updateDuration);
     audio.addEventListener('ended', handleEnded);
-    
+
     return () => {
-      audio.removeEventListener('loadeddata', handleLoadedData);
-      audio.removeEventListener('timeupdate', handleTimeUpdate);
+      audio.removeEventListener('timeupdate', updateTime);
+      audio.removeEventListener('loadedmetadata', updateDuration);
       audio.removeEventListener('ended', handleEnded);
-      audio.pause();
     };
-  }, [audioData]);
+  }, []);
 
-  const togglePlayback = () => {
-    if (!audioRef.current || !audioLoaded) return;
-    
-    if (isPlaying) {
-      audioRef.current.pause();
-    } else {
-      audioRef.current.play();
+  const togglePlayPause = async () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    try {
+      if (isPlaying) {
+        audio.pause();
+        setIsPlaying(false);
+      } else {
+        await audio.play();
+        setIsPlaying(true);
+      }
+    } catch (error) {
+      console.error('Error playing audio:', error);
     }
-    setIsPlaying(!isPlaying);
   };
 
-  const handleDownload = () => {
-    const link = document.createElement('a');
-    link.href = audioData;
-    link.download = `voice-message-${Date.now()}.webm`;
-    link.click();
+  const handleProgressClick = (e: React.MouseEvent) => {
+    const audio = audioRef.current;
+    const progress = progressRef.current;
+    if (!audio || !progress) return;
+
+    const rect = progress.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const clickPercent = clickX / rect.width;
+    const newTime = clickPercent * totalDuration;
+    
+    audio.currentTime = newTime;
+    setCurrentTime(newTime);
   };
 
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  const formatTime = (time: number) => {
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time % 60);
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
 
-  const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
+  const progressPercent = totalDuration > 0 ? (currentTime / totalDuration) * 100 : 0;
 
   return (
-    <div className={`flex items-center space-x-3 p-3 rounded-2xl ${
-      isOwn 
-        ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white' 
-        : 'bg-white border border-gray-200'
-    }`}>
-      {/* Play/Pause Button */}
+    <div className={`flex items-center space-x-3 bg-gradient-to-r from-blue-50 to-purple-50 p-3 rounded-lg max-w-xs ${className}`}>
+      <audio ref={audioRef} preload="metadata">
+        <source src={audioData} type="audio/wav" />
+        <source src={audioData} type="audio/mpeg" />
+        <source src={audioData} type="audio/ogg" />
+      </audio>
+      
       <Button
-        onClick={togglePlayback}
-        disabled={!audioLoaded}
         size="sm"
-        className={`w-10 h-10 p-0 rounded-full ${
-          isOwn 
-            ? 'bg-white/20 hover:bg-white/30 text-white' 
-            : 'bg-blue-100 hover:bg-blue-200 text-blue-600'
-        }`}
+        onClick={togglePlayPause}
+        className="w-8 h-8 rounded-full bg-blue-500 hover:bg-blue-600 text-white shadow-lg transition-all duration-200"
       >
-        {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+        {isPlaying ? (
+          <Pause className="w-4 h-4" />
+        ) : (
+          <Play className="w-4 h-4 ml-0.5" />
+        )}
       </Button>
 
-      {/* Waveform / Progress */}
-      <div className="flex-1 space-y-1">
-        <div className="flex items-center space-x-2">
-          <Volume2 className={`w-4 h-4 ${isOwn ? 'text-white' : 'text-blue-600'}`} />
-          <Badge 
-            variant="secondary" 
-            className={`text-xs ${
-              isOwn 
-                ? 'bg-white/20 text-white border-white/30' 
-                : 'bg-blue-100 text-blue-800 border-blue-200'
-            }`}
-          >
-            Voice Message
-          </Badge>
-        </div>
-        
-        <div className="flex items-center space-x-2">
-          <Progress 
-            value={progress} 
-            className={`flex-1 h-1 ${
-              isOwn ? 'bg-white/20' : 'bg-gray-200'
-            }`}
-          />
-          <span className={`text-xs ${isOwn ? 'text-white/80' : 'text-gray-500'}`}>
-            {formatTime(currentTime)} / {formatTime(duration)}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center space-x-2 mb-1">
+          <Volume2 className="w-3 h-3 text-gray-500" />
+          <span className="text-xs text-gray-500">
+            {formatTime(currentTime)} / {formatTime(totalDuration)}
           </span>
         </div>
+        
+        <div
+          ref={progressRef}
+          className="w-full h-2 bg-gray-200 rounded-full cursor-pointer overflow-hidden"
+          onClick={handleProgressClick}
+        >
+          <div
+            className="h-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-200 ease-out"
+            style={{ width: `${progressPercent}%` }}
+          />
+        </div>
       </div>
-
-      {/* Download Button */}
-      <Button
-        onClick={handleDownload}
-        size="sm"
-        variant="ghost"
-        className={`w-8 h-8 p-0 ${
-          isOwn 
-            ? 'hover:bg-white/20 text-white' 
-            : 'hover:bg-gray-100 text-gray-500'
-        }`}
-      >
-        <Download className="w-3 h-3" />
-      </Button>
     </div>
   );
 }
