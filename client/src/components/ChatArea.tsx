@@ -332,12 +332,16 @@ export default function ChatArea({
                         </div>
                       </div>
                     )}
-                    <div className={`rounded-2xl p-3 shadow-sm group relative transition-all hover:shadow-md ${
+                    <div className={`rounded-2xl p-4 shadow-sm group relative transition-all hover:shadow-md ${
                       isOwn 
-                        ? 'bg-gradient-to-r from-corp-blue to-blue-600 text-white' 
-                        : 'bg-white border border-gray-200 text-black'
+                        ? 'message-bubble-own' 
+                        : 'message-bubble-other'
                     }`}>
-                      <p className={`text-sm leading-relaxed ${isOwn ? 'text-white' : 'text-black'}`}>{message.content}</p>
+                      <p className={`text-sm leading-relaxed message-text ${
+                        isOwn ? 'text-white' : 'text-visible'
+                      }`}>
+                        {message.content}
+                      </p>
                       
                       {/* Message Actions */}
                       <div className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-opacity">

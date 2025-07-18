@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { X, ArrowLeft } from "lucide-react";
 import type { User } from "@shared/schema";
 
 interface ContactInfoProps {
@@ -131,9 +132,14 @@ export default function ContactInfo({ contactId, onClose }: ContactInfoProps) {
     <div className="w-80 bg-white border-l border-gray-200 flex flex-col">
       {/* Header */}
       <div className="p-4 border-b border-gray-200 flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-gray-900">Contact Info</h3>
-        <Button variant="ghost" size="sm" onClick={onClose}>
-          <i className="fas fa-times text-gray-500"></i>
+        <div className="flex items-center space-x-3">
+          <Button variant="ghost" size="sm" onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full">
+            <ArrowLeft className="w-4 h-4 text-gray-600" />
+          </Button>
+          <h3 className="text-lg font-semibold text-gray-900">Contact Info</h3>
+        </div>
+        <Button variant="ghost" size="sm" onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full">
+          <X className="w-4 h-4 text-gray-600" />
         </Button>
       </div>
 
@@ -149,12 +155,22 @@ export default function ContactInfo({ contactId, onClose }: ContactInfoProps) {
           <h3 className="text-lg font-semibold text-gray-900">
             {contact.firstName} {contact.lastName}
           </h3>
-          <p className="text-sm text-gray-500 mb-2">{contact.department}</p>
+          <p className="text-sm text-gray-500 mb-1">{contact.email}</p>
+          <p className="text-xs text-gray-400 mb-3 font-mono">ID: {contact.id}</p>
           <div className="flex items-center justify-center space-x-2 mb-2">
-            <div className={`w-2 h-2 rounded-full ${getStatusColor(contact.status || 'offline')}`}></div>
-            <span className="text-sm text-gray-600">{getStatusText(contact.status || 'offline')}</span>
+            <div className={`w-3 h-3 rounded-full ${getStatusColor(contact.status || 'offline')} shadow-sm`}></div>
+            <Badge 
+              variant="secondary" 
+              className={`${
+                contact.status === 'online' ? 'bg-green-100 text-green-800 border-green-200' :
+                contact.status === 'away' ? 'bg-yellow-100 text-yellow-800 border-yellow-200' :
+                contact.status === 'busy' ? 'bg-red-100 text-red-800 border-red-200' :
+                'bg-gray-100 text-gray-600 border-gray-200'
+              }`}
+            >
+              {getStatusText(contact.status || 'offline')}
+            </Badge>
           </div>
-          <p className="text-xs text-gray-400">ID: {contact.id}</p>
         </div>
       </div>
 

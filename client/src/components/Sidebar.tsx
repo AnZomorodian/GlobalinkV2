@@ -173,9 +173,9 @@ export default function Sidebar({ currentUser, selectedContactId, onContactSelec
                 </AvatarFallback>
               </Avatar>
               <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white shadow-sm ${
-                currentUser.status === 'online' ? 'status-online' :
-                currentUser.status === 'away' ? 'status-away' :
-                currentUser.status === 'busy' ? 'status-busy' : 'status-offline'
+                currentUser.status === 'online' ? 'bg-green-500' :
+                currentUser.status === 'away' ? 'bg-yellow-500' :
+                currentUser.status === 'busy' ? 'bg-red-500' : 'bg-gray-400'
               }`}></div>
             </div>
             <div className="flex-1">
