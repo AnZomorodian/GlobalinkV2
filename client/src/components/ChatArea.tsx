@@ -231,14 +231,14 @@ export default function ChatArea({
               </div>
             </div>
             <div className="flex items-center space-x-1">
-              <Button variant="ghost" size="sm" onClick={() => onCallStart('voice')} className="hover:bg-white/10 text-white">
-                <Phone className="w-4 h-4" />
+              <Button variant="ghost" size="sm" onClick={() => onCallStart('voice')} className="hover:bg-white/10 text-black">
+                <Phone className="w-4 h-4 text-black" />
               </Button>
-              <Button variant="ghost" size="sm" onClick={() => onCallStart('video')} className="hover:bg-white/10 text-white">
-                <Video className="w-4 h-4" />
+              <Button variant="ghost" size="sm" onClick={() => onCallStart('video')} className="hover:bg-white/10 text-black">
+                <Video className="w-4 h-4 text-black" />
               </Button>
-              <Button variant="ghost" size="sm" onClick={onContactInfoToggle} className="hover:bg-white/10 text-white">
-                <Info className="w-4 h-4" />
+              <Button variant="ghost" size="sm" onClick={onContactInfoToggle} className="hover:bg-white/10 text-black">
+                <Info className="w-4 h-4 text-black" />
               </Button>
             </div>
           </div>
@@ -251,9 +251,9 @@ export default function ChatArea({
                 placeholder="Search messages..."
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
-                className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:bg-white/20"
+                className="pl-10 bg-white/10 border-white/20 text-black placeholder:text-black/60 focus:bg-white/20"
               />
-              <Search className="absolute left-3 top-2.5 text-white/60 w-4 h-4" />
+              <Search className="absolute left-3 top-2.5 text-black w-4 h-4" />
             </div>
           </div>
         </CardContent>
@@ -267,12 +267,12 @@ export default function ChatArea({
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-corp-blue"></div>
             </div>
           ) : messages.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-gray-500 py-20">
+            <div className="flex flex-col items-center justify-center h-full text-black py-20">
               <div className="bg-gray-100 rounded-full p-6 mb-4">
-                <Send className="w-8 h-8 text-gray-400" />
+                <Send className="w-8 h-8 text-black" />
               </div>
-              <p className="text-lg font-medium">No messages yet</p>
-              <p className="text-sm">Start the conversation!</p>
+              <p className="text-lg font-medium text-black">No messages yet</p>
+              <p className="text-sm text-black">Start the conversation!</p>
             </div>
           ) : (
             filteredMessages.reverse().map((message: any) => {
@@ -312,7 +312,7 @@ export default function ChatArea({
                             onClick={() => handleReply(message)}
                             className="h-6 w-6 p-0 hover:bg-gray-100 rounded-full"
                           >
-                            <Reply className="w-3 h-3 text-gray-600" />
+                            <Reply className="w-3 h-3 text-black" />
                           </Button>
                           <Button 
                             variant="ghost" 
@@ -320,7 +320,7 @@ export default function ChatArea({
                             onClick={() => handleCopy(message.content)}
                             className="h-6 w-6 p-0 hover:bg-gray-100 rounded-full"
                           >
-                            <Copy className="w-3 h-3 text-gray-600" />
+                            <Copy className="w-3 h-3 text-black" />
                           </Button>
                         </div>
                       </div>
@@ -379,9 +379,9 @@ export default function ChatArea({
                 variant="ghost" 
                 size="sm" 
                 onClick={handleFileUpload}
-                className="hover:bg-gray-100 text-gray-600"
+                className="hover:bg-gray-100 text-black"
               >
-                <Paperclip className="w-4 h-4" />
+                <Paperclip className="w-4 h-4 text-black" />
               </Button>
               <input
                 ref={fileInputRef}
@@ -411,9 +411,9 @@ export default function ChatArea({
                   <Button 
                     variant="ghost" 
                     size="sm"
-                    className="hover:bg-gray-100 text-gray-600"
+                    className="hover:bg-gray-100 text-black"
                   >
-                    <Smile className="w-4 h-4" />
+                    <Smile className="w-4 h-4 text-black" />
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-80 p-4">

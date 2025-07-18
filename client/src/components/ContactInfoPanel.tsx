@@ -26,7 +26,7 @@ export default function ContactInfoPanel({ contact, onClose }: ContactInfoPanelP
       {/* Header */}
       <div className="p-4 border-b border-gray-200 flex items-center justify-between">
         <h3 className="text-lg font-semibold text-black">Contact Info</h3>
-        <Button variant="ghost" size="sm" onClick={onClose}>
+        <Button variant="ghost" size="sm" onClick={onClose} className="hover:bg-gray-100">
           <X className="w-4 h-4 text-black" />
         </Button>
       </div>

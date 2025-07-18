@@ -160,9 +160,9 @@ export default function Sidebar({ currentUser, selectedContactId, onContactSelec
             variant="ghost"
             size="sm"
             onClick={onSettingsOpen}
-            className="h-8 w-8 p-0 hover:bg-white/10 text-white"
+            className="h-8 w-8 p-0 hover:bg-white/10 text-black"
           >
-            <Settings className="w-4 h-4" />
+            <Settings className="w-4 h-4 text-black" />
           </Button>
         </div>
 
@@ -230,9 +230,9 @@ export default function Sidebar({ currentUser, selectedContactId, onContactSelec
               placeholder="Search contacts..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:bg-white/20"
+              className="pl-10 bg-white/10 border-white/20 text-black placeholder:text-black/60 focus:bg-white/20"
             />
-            <Search className="absolute left-3 top-2.5 text-white/60 w-4 h-4" />
+            <Search className="absolute left-3 top-2.5 text-black w-4 h-4" />
           </div>
         </div>
       </div>
@@ -241,7 +241,7 @@ export default function Sidebar({ currentUser, selectedContactId, onContactSelec
       <Dialog open={showAddContact} onOpenChange={setShowAddContact}>
         <DialogTrigger asChild>
           <Button variant="outline" className="mx-4 mb-4 border-gray-300 text-black hover:bg-gray-50">
-            <Plus className="w-4 h-4 mr-2" />
+            <Plus className="w-4 h-4 mr-2 text-black" />
             Add Contact
           </Button>
         </DialogTrigger>
@@ -271,7 +271,7 @@ export default function Sidebar({ currentUser, selectedContactId, onContactSelec
             
             {searchNotFound && addContactId.length > 0 && (
               <div className="flex items-center space-x-2 text-red-600 bg-red-50 p-3 rounded">
-                <AlertCircle className="w-4 h-4" />
+                <AlertCircle className="w-4 h-4 text-red-600" />
                 <span className="text-sm">I can't find the user with ID "{addContactId}"</span>
               </div>
             )}

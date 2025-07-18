@@ -129,7 +129,7 @@ export default function SettingsModal({ user, onClose }: SettingsModalProps) {
                 Account
               </TabsTrigger>
               <TabsTrigger value="about" className="w-full justify-start">
-                <Info className="w-4 h-4 mr-3" />
+                <Info className="w-4 h-4 mr-3 text-black" />
                 About
               </TabsTrigger>
             </TabsList>
@@ -172,7 +172,7 @@ export default function SettingsModal({ user, onClose }: SettingsModalProps) {
                             input.click();
                           }}
                         >
-                          <Camera className="w-4 h-4" />
+                          <Camera className="w-4 h-4 text-white" />
                         </Button>
                       </div>
                       <div>

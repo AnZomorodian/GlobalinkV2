@@ -94,3 +94,19 @@
     background-color: var(--corp-error);
   }
 }
+
+/* Force all icons to be black for visibility */
+.lucide, svg {
+  color: #000000 !important;
+  fill: currentColor !important;
+}
+
+/* Override specific icon colors that might be hiding */
+.text-white svg,
+.text-gray-400 svg,
+.text-gray-500 svg,
+.text-gray-600 svg,
+.text-blue-100 svg {
+  color: #000000 !important;
+  fill: #000000 !important;
+}
