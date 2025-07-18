@@ -1,0 +1,14 @@
+[
+  {
+    "id": "user_1",
+    "email": "user@globalink.com",
+    "firstName": "Demo",
+    "lastName": "User",
+    "profileImageUrl": null,
+    "companyRole": "Employee",
+    "company": "Globalink Corporation",
+    "status": "online",
+    "createdAt": "2025-07-18T17:22:15.522Z",
+    "updatedAt": "2025-07-18T17:22:23.967Z"
+  }
+]
