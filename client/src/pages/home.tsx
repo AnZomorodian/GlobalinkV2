@@ -38,15 +38,20 @@ export default function Home() {
             toast({
               title: "💬 New Message",
               description: `${data.message.sender?.firstName}: ${data.message.content.substring(0, 50)}${data.message.content.length > 50 ? '...' : ''}`,
-              duration: 4000,
+              duration: 2000, // 2 seconds as requested
             });
             
             // Browser notification if permission granted
             if (Notification.permission === 'granted') {
-              new Notification(`New message from ${data.message.sender?.firstName}`, {
+              const notification = new Notification(`New message from ${data.message.sender?.firstName}`, {
                 body: data.message.content,
                 icon: data.message.sender?.profileImageUrl || '/default-avatar.png',
               });
+              
+              // Auto-hide notification after 2 seconds
+              setTimeout(() => {
+                notification.close();
+              }, 2000);
             }
           }
           break;
