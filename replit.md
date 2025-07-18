@@ -135,6 +135,15 @@ The application follows a monorepo structure with shared TypeScript types, makin
 
 ## Recent Changes
 
+### January 2025 - Enhanced User Discovery & Comprehensive Documentation
+- **✓ Auto-Discovery System**: Newly signed users automatically appear in recent chats for better discoverability
+- **✓ Enhanced Add Contact**: Added discoverable users section with improved contact management interface
+- **✓ Comprehensive README**: Complete documentation with deployment options, environment variables, and REPL_ID location
+- **✓ Improved Main Page**: Enhanced welcome screen with feature cards and professional styling
+- **✓ Contact Management**: Better add contact flow with discovery and direct chat initiation
+- **✓ Database Optimization**: Enhanced recent chats to include recently active users for team collaboration
+- **✓ Voice Compression**: Advanced audio compression with 16kHz sample rate and WAV encoding for smaller payloads
+
 ### January 2025 - UI/UX Enhancement & Performance Optimization
 - **✓ Logo Background Fix**: Removed background from GLOBALINK logo for clean transparent appearance
 - **✓ Enhanced Contact Details**: Added comprehensive contact information display including job title, company, location, Zin code, and member since date

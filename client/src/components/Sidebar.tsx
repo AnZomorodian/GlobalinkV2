@@ -56,6 +56,12 @@ export default function Sidebar({ currentUser, selectedContactId, onContactSelec
     retry: false,
   });
 
+  // Get discoverable users for enhanced add contact
+  const { data: discoverableUsers = [], isLoading: discoverableLoading } = useQuery({
+    queryKey: ["/api/users/discoverable"],
+    retry: false,
+  });
+
   // Add contact mutation
   const addContactMutation = useMutation({
     mutationFn: async (contactId: string) => {
@@ -365,6 +371,73 @@ export default function Sidebar({ currentUser, selectedContactId, onContactSelec
                       Start Chat
                     </Button>
                   </div>
+                </div>
+              </div>
+            )}
+
+            {/* Enhanced Discoverable Users Section */}
+            {!userByIdLoading && !userById && addContactId.length === 0 && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-medium text-gray-700">Discover New Contacts</h3>
+                  {discoverableLoading && (
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-500"></div>
+                  )}
+                </div>
+                <div className="max-h-60 overflow-y-auto space-y-2">
+                  {discoverableUsers.slice(0, 8).map((user: any) => (
+                    <div key={user.id} className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg border border-gray-200 transition-all duration-200">
+                      <div className="flex items-center space-x-3">
+                        <Avatar className="w-8 h-8 ring-2 ring-white shadow-sm">
+                          <AvatarImage src={user.profileImageUrl || ""} />
+                          <AvatarFallback className="text-xs bg-gradient-to-br from-purple-600 to-blue-600 text-white">
+                            {user.firstName?.[0]}{user.lastName?.[0]}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">{user.firstName} {user.lastName}</p>
+                          <p className="text-xs text-gray-500">{user.email}</p>
+                          {user.zinCode && (
+                            <p className="text-xs text-blue-600 font-mono">Zin: {user.zinCode}</p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex space-x-1">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-xs px-2 py-1 h-7"
+                          onClick={async () => {
+                            try {
+                              await addContactMutation.mutateAsync(user.id);
+                              setShowAddContact(false);
+                            } catch (error) {
+                              console.error("Failed to add contact:", error);
+                            }
+                          }}
+                          disabled={addContactMutation.isPending}
+                        >
+                          Add
+                        </Button>
+                        <Button
+                          size="sm"
+                          className="text-xs px-2 py-1 h-7"
+                          onClick={() => {
+                            onContactSelect(user.id);
+                            setShowAddContact(false);
+                          }}
+                        >
+                          Chat
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                  {discoverableUsers.length === 0 && !discoverableLoading && (
+                    <div className="text-center py-8 text-gray-500">
+                      <p className="text-sm">No new contacts to discover right now</p>
+                      <p className="text-xs mt-1">Try searching by user ID above</p>
+                    </div>
+                  )}
                 </div>
               </div>
             )}

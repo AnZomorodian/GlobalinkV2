@@ -23,6 +23,7 @@ export interface IStorage {
   // Additional user operations
   searchUsers(query: string, currentUserId: string): Promise<User[]>;
   updateUserStatus(userId: string, status: string): Promise<void>;
+  getDiscoverableUsers(currentUserId: string): Promise<User[]>;
   
   // Contact operations
   addContact(contact: InsertContact): Promise<Contact>;
@@ -272,15 +273,49 @@ export class DatabaseStorage implements IStorage {
 
     // Get user details for each contact
     const contactIds = Array.from(contactMap.keys());
-    const contactUsers = await db
+    let contactUsers = [];
+    
+    if (contactIds.length > 0) {
+      contactUsers = await db
+        .select()
+        .from(users)
+        .where(or(...contactIds.map(id => eq(users.id, id))));
+    }
+
+    // Get recently active users (for auto-discovery)
+    const recentlyActiveUsers = await db
       .select()
       .from(users)
-      .where(or(...contactIds.map(id => eq(users.id, id))));
+      .where(not(eq(users.id, userId)))
+      .orderBy(desc(users.updatedAt))
+      .limit(5);
 
-    return contactUsers.map(user => ({
+    // Combine message-based chats with recently active users
+    const chatsWithMessages = contactUsers.map(user => ({
       ...user,
       lastMessage: contactMap.get(user.id),
     }));
+
+    // Add recently active users that don't have messages yet
+    const existingContactIds = new Set(contactIds);
+    const newDiscoveredUsers = recentlyActiveUsers
+      .filter(user => !existingContactIds.has(user.id))
+      .map(user => ({
+        ...user,
+        lastMessage: null,
+      }));
+
+    return [...chatsWithMessages, ...newDiscoveredUsers];
+  }
+
+  // Add method to get all discoverable users for enhanced add contact
+  async getDiscoverableUsers(currentUserId: string): Promise<User[]> {
+    return await db
+      .select()
+      .from(users)
+      .where(not(eq(users.id, currentUserId)))
+      .orderBy(desc(users.updatedAt))
+      .limit(20);
   }
 
   // Call operations

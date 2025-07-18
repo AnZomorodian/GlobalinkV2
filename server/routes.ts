@@ -46,6 +46,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get discoverable users for enhanced add contact (must come before the :userId route)
+  app.get('/api/users/discoverable', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const users = await storage.getDiscoverableUsers(userId);
+      res.json(users);
+    } catch (error) {
+      console.error("Error fetching discoverable users:", error);
+      res.status(500).json({ message: "Failed to fetch discoverable users" });
+    }
+  });
+
   // Get user by ID route
   app.get('/api/users/:userId', isAuthenticated, async (req: any, res) => {
     try {
@@ -243,6 +255,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to fetch chats" });
     }
   });
+
+
 
   // Call routes
   app.post('/api/calls', isAuthenticated, async (req: any, res) => {

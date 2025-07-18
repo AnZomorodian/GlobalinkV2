@@ -1,252 +1,366 @@
-# Globalink - Corporate Messenger
+# GLOBALINK - Corporate Messenger
 
-A modern, secure corporate messaging platform built with React, Express.js, and PostgreSQL. Features real-time messaging, voice/video calling, user management, and team collaboration tools.
+A modern, full-stack corporate messaging application built with React, Express.js, and PostgreSQL. Features real-time messaging, voice/video calling, contact management, and professional workplace communication tools.
 
-## Features
+## 🚀 Features
 
-### 🔐 Authentication & Security
-- **Secure Authentication**: Integrated with Replit's OIDC authentication system
-- **Session Management**: PostgreSQL-backed session storage with secure cookies
-- **Team Identification**: Unique Zin Codes for organizational management
-- **Privacy Controls**: Comprehensive privacy settings and user status management
+- **Real-time Messaging**: Instant messaging with live updates via WebSocket
+- **Voice & Video Calls**: WebRTC-powered voice and video communication
+- **Contact Management**: Enhanced contact discovery and management with Zin codes
+- **Voice Messages**: Compressed audio messages with advanced encoding
+- **Professional UI**: Modern glass-morphism design with dark/light mode support
+- **Team Management**: 12-character Zin codes for team identification
+- **Secure Authentication**: Replit's OpenID Connect (OIDC) authentication
+- **File Sharing**: Support for images, documents, and attachments
+- **Mobile Responsive**: Optimized for all device sizes
 
-### 💬 Real-Time Communication
-- **Instant Messaging**: WebSocket-powered real-time messaging with delivery confirmation
-- **Voice & Video Calls**: WebRTC-based peer-to-peer calling with call history
-- **File Sharing**: Support for attachments and file sharing in conversations
-- **Message Types**: Text, images, files, and reply functionality
+## 🛠️ Tech Stack
 
-### 👥 Contact Management
-- **User Search**: Find users by ID, name, or email
-- **Contact Lists**: Organize and manage your professional contacts
-- **Team Discovery**: Use Zin Codes to identify team members
-- **Status Indicators**: Real-time user presence and availability status
+### Frontend
+- **React 18** with TypeScript
+- **Vite** for fast development and builds
+- **TanStack Query** for server state management
+- **Tailwind CSS** with shadcn/ui components
+- **Wouter** for client-side routing
 
-### 🎨 Modern User Interface
-- **Responsive Design**: Works seamlessly on desktop and mobile devices
-- **Professional Theme**: Corporate-friendly color scheme and typography
-- **Accessibility**: ARIA-compliant components using Radix UI
-- **Dark/Light Mode**: Customizable appearance settings
+### Backend
+- **Node.js** with Express.js
+- **TypeScript** throughout the stack
+- **PostgreSQL** with Drizzle ORM
+- **WebSocket** for real-time communication
+- **Replit Auth** for secure authentication
 
-### 🛠️ Technical Excellence
-- **TypeScript**: Full type safety across frontend and backend
-- **Real-time Updates**: WebSocket integration for live features
-- **Database**: PostgreSQL with Drizzle ORM for type-safe queries
-- **Performance**: Optimized with React Query for efficient data fetching
+### Database
+- **PostgreSQL** (Neon serverless)
+- **Drizzle ORM** for type-safe operations
+- **Session storage** in PostgreSQL
 
-## Quick Start
+## 🔧 Environment Variables
 
-### Prerequisites
-- Node.js 18+ installed
-- PostgreSQL database access
-- Replit account (for authentication)
+### Required Environment Variables
 
-### Installation
+| Variable | Description | Location |
+|----------|-------------|----------|
+| `DATABASE_URL` | PostgreSQL connection string | Provided by Replit |
+| `REPL_ID` | Replit project ID | Provided by Replit |
+| `REPLIT_DOMAINS` | Replit domains | Provided by Replit |
+| `NODE_ENV` | Environment mode | Set to `development` or `production` |
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/yourusername/globalink-messenger.git
-   cd globalink-messenger
-   ```
+### Finding Your REPL_ID
 
-2. **Install dependencies**
+Your **REPL_ID** is available in several ways:
+
+1. **Replit Shell**: Run `echo $REPL_ID` in the shell
+2. **Environment Variables**: Check the environment variables in your Replit project
+3. **URL**: It's part of your Replit URL: `https://replit.com/@username/REPL_ID`
+4. **Code**: Access it in your application with `process.env.REPL_ID`
+
+## 📦 Installation & Setup
+
+### 1. Replit Deployment (Recommended)
+
+1. **Fork this repository** to your Replit account
+2. **Install dependencies**:
    ```bash
    npm install
    ```
-
-3. **Set up environment variables**
-   Create a `.env` file in the root directory:
-   ```env
-   DATABASE_URL=your_postgresql_connection_string
-   SESSION_SECRET=your_secure_session_secret
-   REPL_ID=your_replit_app_id
-   REPLIT_DOMAINS=your_replit_domain
-   ```
-
-4. **Initialize the database**
+3. **Set up database**:
    ```bash
    npm run db:push
    ```
-
-5. **Start the development server**
+4. **Start the application**:
    ```bash
    npm run dev
    ```
 
-The application will be available at `http://localhost:5000`
+### 2. Local Development
 
-## Usage
+#### Prerequisites
+- Node.js 18+ 
+- PostgreSQL 12+
+- npm or yarn
+
+#### Setup Steps
+
+1. **Clone the repository**:
+   ```bash
+   git clone <repository-url>
+   cd globalink-messenger
+   ```
+
+2. **Install dependencies**:
+   ```bash
+   npm install
+   ```
+
+3. **Set up environment variables**:
+   Create a `.env` file:
+   ```env
+   DATABASE_URL=postgresql://username:password@localhost:5432/globalink
+   NODE_ENV=development
+   REPL_ID=your-local-repl-id
+   REPLIT_DOMAINS=localhost:5000
+   ```
+
+4. **Set up database**:
+   ```bash
+   # Create database
+   createdb globalink
+   
+   # Push schema
+   npm run db:push
+   ```
+
+5. **Start the application**:
+   ```bash
+   npm run dev
+   ```
+
+### 3. Docker Deployment
+
+1. **Create Dockerfile**:
+   ```dockerfile
+   FROM node:18-alpine
+   
+   WORKDIR /app
+   COPY package*.json ./
+   RUN npm install
+   
+   COPY . .
+   RUN npm run build
+   
+   EXPOSE 5000
+   CMD ["npm", "start"]
+   ```
+
+2. **Build and run**:
+   ```bash
+   docker build -t globalink-messenger .
+   docker run -p 5000:5000 -e DATABASE_URL=your-db-url globalink-messenger
+   ```
+
+### 4. Cloud Deployment Options
+
+#### Vercel
+```bash
+# Install Vercel CLI
+npm i -g vercel
+
+# Deploy
+vercel --prod
+```
+
+#### Heroku
+```bash
+# Install Heroku CLI
+npm i -g heroku
+
+# Create app
+heroku create globalink-messenger
+
+# Set environment variables
+heroku config:set DATABASE_URL=your-db-url
+
+# Deploy
+git push heroku main
+```
+
+#### Railway
+```bash
+# Install Railway CLI
+npm i -g @railway/cli
+
+# Deploy
+railway login
+railway init
+railway up
+```
+
+## 🗄️ Database Setup
+
+### Schema Management
+
+The application uses Drizzle ORM for database schema management:
+
+```bash
+# Push schema changes to database
+npm run db:push
+
+# Generate migration files
+npm run db:generate
+
+# View database in Drizzle Studio
+npm run db:studio
+```
+
+### Database Providers
+
+#### Neon (Serverless PostgreSQL) - Recommended
+- **Sign up**: [https://neon.tech](https://neon.tech)
+- **Create database**: Get connection string
+- **Set DATABASE_URL**: Use the connection string
+
+#### Supabase
+- **Sign up**: [https://supabase.com](https://supabase.com)
+- **Create project**: Get PostgreSQL connection
+- **Set DATABASE_URL**: Use the connection string
+
+#### Local PostgreSQL
+```bash
+# Install PostgreSQL
+brew install postgresql  # macOS
+sudo apt install postgresql  # Ubuntu
+
+# Start service
+brew services start postgresql  # macOS
+sudo systemctl start postgresql  # Ubuntu
+
+# Create database
+createdb globalink
+```
+
+## 📱 Usage
 
 ### Getting Started
-1. **Sign In**: Use your Replit credentials to authenticate
-2. **Complete Profile**: Add your professional information and avatar
-3. **Find Your Zin Code**: Check Settings > Team Management for your unique team identifier
-4. **Add Contacts**: Search for colleagues by their user ID
-5. **Start Messaging**: Begin conversations with your team members
 
-### Team Management
-- Share your **Zin Code** with team members for easy identification
-- Use the search function to find colleagues by ID, name, or email
-- Manage your availability status (Online, Away, Busy, Offline)
-- Organize contacts and maintain professional connections
+1. **Sign in** with your Replit account
+2. **Set up profile** with your name and details
+3. **Get your Zin code** from settings for team identification
+4. **Discover contacts** in the sidebar
+5. **Start messaging** by selecting a contact
 
-### Communication Features
-- **Real-time Messaging**: Send and receive messages instantly
-- **Voice/Video Calls**: Initiate calls directly from chat interface
-- **File Sharing**: Share documents and images with colleagues
-- **Message History**: Access complete conversation history
+### Key Features
 
-## Project Structure
+#### Contact Management
+- **Add contacts** by user ID or discover automatically
+- **Zin codes** for team identification
+- **Contact details** with job title, company, location
+
+#### Messaging
+- **Text messages** with emoji support
+- **Voice messages** with compression
+- **File sharing** for documents and images
+- **Real-time delivery** with read receipts
+
+#### Calls
+- **Voice calls** with WebRTC
+- **Video calls** with camera support
+- **Call history** tracking
+
+## 🔧 Development
+
+### Project Structure
 
 ```
-├── client/                 # React frontend application
+├── client/                 # React frontend
 │   ├── src/
-│   │   ├── components/     # Reusable UI components
-│   │   ├── pages/          # Application pages
-│   │   ├── hooks/          # Custom React hooks
-│   │   ├── lib/            # Utility functions
-│   │   └── index.css       # Global styles
-│   └── index.html          # HTML entry point
-├── server/                 # Express.js backend
-│   ├── db.ts              # Database configuration
-│   ├── routes.ts          # API endpoints
-│   ├── storage.ts         # Data access layer
-│   ├── replitAuth.ts      # Authentication setup
-│   └── index.ts           # Server entry point
-├── shared/                 # Shared TypeScript types
-│   └── schema.ts          # Database schema and types
-├── package.json           # Project dependencies
-└── README.md             # This file
+│   │   ├── components/    # UI components
+│   │   ├── pages/         # Page components
+│   │   ├── lib/           # Utilities
+│   │   └── hooks/         # Custom hooks
+├── server/                # Express backend
+│   ├── routes.ts          # API routes
+│   ├── storage.ts         # Database operations
+│   └── index.ts           # Server entry
+├── shared/                # Shared types/schemas
+│   └── schema.ts          # Database schema
+└── package.json           # Dependencies
 ```
-
-## Database Schema
-
-### Users Table
-- User profile information (name, email, avatar)
-- Professional details (department, job title, company)
-- Status management (online, away, busy, offline)
-- Unique Zin Code for team identification
-
-### Messages Table
-- Real-time message storage with sender/receiver relationships
-- Support for different message types (text, file, image)
-- Read status tracking and reply functionality
-- Timestamp indexing for efficient history retrieval
-
-### Contacts Table
-- Professional contact relationships
-- Contact status management (pending, accepted, blocked)
-- Team-based contact organization
-
-### Calls Table
-- Voice and video call history
-- Call duration and status tracking
-- Caller and receiver relationship management
-
-## API Endpoints
-
-### Authentication
-- `GET /api/auth/user` - Get current user information
-- `GET /api/login` - Initiate authentication
-- `GET /api/logout` - Sign out user
-- `PUT /api/auth/user` - Update user profile
-
-### Users
-- `GET /api/users/search` - Search users by query
-- `GET /api/users/:id` - Get user by ID
-- `PUT /api/users/status` - Update user status
-
-### Contacts
-- `GET /api/contacts` - Get user's contacts
-- `POST /api/contacts` - Add new contact
-- `DELETE /api/contacts/:id` - Remove contact
-
-### Messages
-- `GET /api/messages/:contactId` - Get conversation history
-- `POST /api/messages` - Send new message
-- `GET /api/chats` - Get recent conversations
-
-### Calls
-- `POST /api/calls` - Initiate call
-- `PUT /api/calls/:id/status` - Update call status
-
-## Development
 
 ### Available Scripts
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run start` - Start production server
-- `npm run db:push` - Push database schema changes
-- `npm run check` - Run TypeScript type checking
 
-### Technology Stack
-- **Frontend**: React 18, TypeScript, Tailwind CSS, Radix UI
-- **Backend**: Express.js, TypeScript, WebSocket
-- **Database**: PostgreSQL with Drizzle ORM
-- **Authentication**: Replit OIDC
-- **Real-time**: WebSocket for live features
-- **Build**: Vite for frontend, ESBuild for backend
+```bash
+# Development
+npm run dev          # Start development server
+npm run build        # Build for production
+npm run start        # Start production server
 
-### Code Quality
-- **TypeScript**: Strict type checking enabled
-- **ESLint**: Code linting and formatting
-- **Prettier**: Code formatting standards
-- **Husky**: Git hooks for quality checks
+# Database
+npm run db:push      # Push schema to database
+npm run db:generate  # Generate migrations
+npm run db:studio    # Open Drizzle Studio
 
-## Security Features
+# Utilities
+npm run type-check   # TypeScript type checking
+npm run lint         # ESLint code linting
+```
 
-### Authentication Security
-- Secure OIDC authentication with Replit
-- HTTP-only cookies with secure flags
-- Session timeout and refresh token handling
-- CSRF protection for all API endpoints
+### Adding New Features
+
+1. **Update schema** in `shared/schema.ts`
+2. **Add storage methods** in `server/storage.ts`
+3. **Create API routes** in `server/routes.ts`
+4. **Build UI components** in `client/src/components/`
+5. **Update types** and run `npm run db:push`
+
+## 🚀 Performance Optimization
+
+### Audio Compression
+- **16kHz sample rate** for voice messages
+- **WAV compression** for smaller payloads
+- **Advanced encoding** for better quality
+
+### Caching
+- **TanStack Query** for server state caching
+- **Browser caching** for static assets
+- **Session storage** for user preferences
+
+### Real-time Updates
+- **WebSocket connections** for live messaging
+- **Efficient broadcasting** to connected users
+- **Automatic reconnection** on connection loss
+
+## 🔒 Security
+
+### Authentication
+- **Replit OIDC** for secure authentication
+- **Session management** with PostgreSQL storage
+- **HTTP-only cookies** for security
 
 ### Data Protection
-- Encrypted database connections
-- Secure session storage in PostgreSQL
-- Input validation and sanitization
-- Rate limiting for API endpoints
+- **Encrypted connections** (HTTPS/WSS)
+- **Input validation** with Zod schemas
+- **SQL injection prevention** with Drizzle ORM
 
-### Privacy Controls
-- User status visibility settings
-- Contact blocking and privacy options
-- Secure team identification with Zin Codes
-- Message encryption in transit
-
-## Contributing
+## 🤝 Contributing
 
 1. **Fork the repository**
-2. **Create a feature branch**: `git checkout -b feature/amazing-feature`
-3. **Commit your changes**: `git commit -m 'Add amazing feature'`
-4. **Push to the branch**: `git push origin feature/amazing-feature`
-5. **Open a Pull Request**
+2. **Create feature branch**: `git checkout -b feature/amazing-feature`
+3. **Commit changes**: `git commit -m 'Add amazing feature'`
+4. **Push to branch**: `git push origin feature/amazing-feature`
+5. **Open pull request**
 
-### Development Guidelines
-- Follow TypeScript best practices
-- Write comprehensive tests for new features
-- Update documentation for API changes
-- Ensure responsive design compatibility
-- Maintain accessibility standards
-
-## License
+## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## Support
+## 🆘 Support
 
-For support and questions:
-- **Documentation**: Check this README and inline comments
-- **Issues**: Open an issue on GitHub
-- **Email**: support@globalink.com
+### Common Issues
 
-## Acknowledgments
+#### Database Connection
+- **Check DATABASE_URL** environment variable
+- **Verify PostgreSQL** is running
+- **Run schema push**: `npm run db:push`
 
-- **Replit**: For providing authentication and hosting infrastructure
-- **Radix UI**: For accessible component primitives
-- **Tailwind CSS**: For utility-first CSS framework
-- **Drizzle ORM**: For type-safe database operations
-- **React Query**: For efficient data fetching and caching
+#### Authentication Issues
+- **Check REPL_ID** environment variable
+- **Verify Replit domains** configuration
+- **Clear browser cache** and cookies
+
+#### WebSocket Connection
+- **Check firewall settings**
+- **Verify WebSocket support** in browser
+- **Check network connectivity**
+
+### Getting Help
+
+- **GitHub Issues**: Report bugs and request features
+- **Documentation**: Check this README for setup instructions
+- **Community**: Join discussions in the repository
 
 ---
 
-**Globalink** - Professional communication made simple and secure.
+**Built with ❤️ using Replit, React, and PostgreSQL**
+
+*For the latest updates and features, check the [Recent Changes](replit.md) section.*

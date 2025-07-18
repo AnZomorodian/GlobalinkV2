@@ -198,35 +198,55 @@ export default function ChatArea({
   if (!selectedContactId) {
     return (
       <div className="flex-1 flex flex-col glass-panel relative overflow-hidden">
-        {/* Background elements */}
-        <div className="absolute inset-0 bg-gradient-to-br from-purple-50 via-blue-50 to-teal-50"></div>
-        <div className="absolute top-20 left-20 w-32 h-32 bg-purple-200/30 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-20 right-20 w-40 h-40 bg-blue-200/30 rounded-full blur-3xl"></div>
+        {/* Enhanced Background elements */}
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-50 via-blue-50 to-teal-50 dark:from-purple-900/20 dark:via-blue-900/20 dark:to-teal-900/20"></div>
+        <div className="absolute top-20 left-20 w-32 h-32 bg-purple-200/30 rounded-full blur-3xl animate-pulse-slow"></div>
+        <div className="absolute bottom-20 right-20 w-40 h-40 bg-blue-200/30 rounded-full blur-3xl animate-pulse-slow" style={{animationDelay: '2s'}}></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-60 h-60 bg-teal-200/20 rounded-full blur-3xl animate-pulse-slow" style={{animationDelay: '4s'}}></div>
         
         <div className="flex-1 flex items-center justify-center relative z-10">
-          <div className="text-center space-y-6 animate-fade-in">
-            <div className="mx-auto mb-6 floating-element">
+          <div className="text-center space-y-8 animate-fade-in max-w-2xl mx-auto px-8">
+            <div className="mx-auto mb-8 floating-element">
               <GlobalinkLogo size="xl" showText={false} className="drop-shadow-2xl" />
             </div>
-            <div className="space-y-3">
-              <h3 className="text-3xl font-bold gradient-text">Welcome to GLOBALINK</h3>
-              <p className="text-gray-600 text-lg">Connect, collaborate, and communicate</p>
-              <p className="text-gray-500">Select a contact to start your conversation</p>
+            <div className="space-y-4">
+              <h3 className="text-4xl font-bold gradient-text">Welcome to GLOBALINK</h3>
+              <p className="text-gray-600 text-xl font-medium">Your Professional Communication Hub</p>
+              <p className="text-gray-500 text-lg">Connect, collaborate, and communicate with your team</p>
             </div>
-            <div className="mt-8 space-y-2">
-              <div className="flex items-center justify-center space-x-6 text-sm text-gray-500">
-                <div className="flex items-center space-x-2">
-                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                  <span>Secure Messaging</span>
+            
+            {/* Enhanced Feature Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
+              <div className="glass-card p-6 text-center hover:shadow-lg transition-all duration-300">
+                <div className="w-12 h-12 bg-green-500/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <div className="w-6 h-6 bg-green-500 rounded-full animate-pulse"></div>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" style={{animationDelay: '0.5s'}}></div>
-                  <span>Voice & Video Calls</span>
+                <h4 className="font-semibold text-gray-900 mb-2">Secure Messaging</h4>
+                <p className="text-gray-600 text-sm">End-to-end encrypted conversations with real-time delivery</p>
+              </div>
+              
+              <div className="glass-card p-6 text-center hover:shadow-lg transition-all duration-300">
+                <div className="w-12 h-12 bg-blue-500/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <div className="w-6 h-6 bg-blue-500 rounded-full animate-pulse" style={{animationDelay: '0.5s'}}></div>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse" style={{animationDelay: '1s'}}></div>
-                  <span>File Sharing</span>
+                <h4 className="font-semibold text-gray-900 mb-2">Voice & Video Calls</h4>
+                <p className="text-gray-600 text-sm">High-quality audio and video calls with WebRTC technology</p>
+              </div>
+              
+              <div className="glass-card p-6 text-center hover:shadow-lg transition-all duration-300">
+                <div className="w-12 h-12 bg-purple-500/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <div className="w-6 h-6 bg-purple-500 rounded-full animate-pulse" style={{animationDelay: '1s'}}></div>
                 </div>
+                <h4 className="font-semibold text-gray-900 mb-2">Team Collaboration</h4>
+                <p className="text-gray-600 text-sm">Organize teams with Zin codes and discover colleagues</p>
+              </div>
+            </div>
+            
+            {/* Quick Start Actions */}
+            <div className="flex flex-col sm:flex-row gap-4 items-center justify-center mt-8">
+              <div className="flex items-center space-x-2 text-sm text-gray-500 bg-white/50 px-4 py-2 rounded-full">
+                <span>👈</span>
+                <span>Select a contact from the sidebar to start chatting</span>
               </div>
             </div>
           </div>
