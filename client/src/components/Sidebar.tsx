@@ -148,11 +148,9 @@ export default function Sidebar({ currentUser, selectedContactId, onContactSelec
         <div className="relative z-10">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
-                <GlobalinkLogo className="w-6 h-6 text-white" />
-              </div>
+              <GlobalinkLogo size="sm" showText={false} className="shadow-lg" />
               <div>
-                <h1 className="text-xl font-bold gradient-text">Globalink</h1>
+                <h1 className="text-xl font-bold gradient-text">GLOBALINK</h1>
                 <p className="text-xs text-gray-500">Next-Gen Messenger</p>
               </div>
             </div>

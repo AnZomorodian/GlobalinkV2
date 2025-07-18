@@ -17,13 +17,22 @@ export default function ContactInfo({ contactId, onClose }: ContactInfoProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Fetch contact details
+  // Fetch contact details - first try from contacts list, then fetch user directly
   const { data: contacts = [] } = useQuery({
     queryKey: ["/api/contacts"],
     retry: false,
   });
 
-  const contact = contacts.find((c: any) => c.contactId === contactId)?.contact;
+  const contactFromList = contacts.find((c: any) => c.contactId === contactId)?.contact;
+
+  // If not found in contacts, fetch user directly by ID
+  const { data: userContact } = useQuery({
+    queryKey: ["/api/users", contactId],
+    enabled: !contactFromList && !!contactId,
+    retry: false,
+  });
+
+  const contact = contactFromList || userContact;
 
   // Block contact mutation
   const blockContactMutation = useMutation({

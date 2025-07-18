@@ -197,11 +197,11 @@ export default function ChatArea({
         
         <div className="flex-1 flex items-center justify-center relative z-10">
           <div className="text-center space-y-6 animate-fade-in">
-            <div className="w-32 h-32 mx-auto mb-6 bg-gradient-to-br from-purple-400 to-blue-500 rounded-3xl flex items-center justify-center shadow-2xl floating-element">
-              <GlobalinkLogo className="w-16 h-16 text-white" />
+            <div className="mx-auto mb-6 floating-element">
+              <GlobalinkLogo size="xl" showText={false} className="drop-shadow-2xl" />
             </div>
             <div className="space-y-3">
-              <h3 className="text-3xl font-bold gradient-text">Welcome to Globalink</h3>
+              <h3 className="text-3xl font-bold gradient-text">Welcome to GLOBALINK</h3>
               <p className="text-gray-600 text-lg">Connect, collaborate, and communicate</p>
               <p className="text-gray-500">Select a contact to start your conversation</p>
             </div>
