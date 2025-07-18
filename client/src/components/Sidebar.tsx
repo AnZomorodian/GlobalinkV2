@@ -292,17 +292,59 @@ export default function Sidebar({ currentUser, selectedContactId, onContactSelec
                       )}
                     </div>
                   </div>
-                  <Button
-                    size="sm"
-                    onClick={() => {
-                      handleAddContact(userById.id);
-                      setShowAddContact(false);
-                      setAddContactId("");
-                    }}
-                    disabled={addContactMutation.isPending}
-                  >
-                    Add
-                  </Button>
+                  <div className="flex space-x-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={async () => {
+                        try {
+                          await addContactMutation.mutateAsync(userById.id);
+                          setShowAddContact(false);
+                          setAddContactId("");
+                        } catch (error) {
+                          console.error("Failed to add contact:", error);
+                        }
+                      }}
+                      disabled={addContactMutation.isPending}
+                      className="px-3"
+                    >
+                      Add Contact
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={async () => {
+                        try {
+                          // Create initial message to start chat
+                          await apiRequest("POST", "/api/messages", {
+                            receiverId: userById.id,
+                            content: "👋 Hello! Let's connect on GLOBALINK.",
+                            messageType: "text",
+                          });
+                          
+                          // Refresh chats and select the new contact
+                          queryClient.invalidateQueries({ queryKey: ["/api/chats"] });
+                          onContactSelect(userById.id);
+                          setShowAddContact(false);
+                          setAddContactId("");
+                          
+                          toast({
+                            title: "Chat Started",
+                            description: `Started chatting with ${userById.firstName} ${userById.lastName}`,
+                          });
+                        } catch (error) {
+                          console.error("Failed to start chat:", error);
+                          toast({
+                            title: "Error",
+                            description: "Failed to start chat. Please try again.",
+                            variant: "destructive",
+                          });
+                        }
+                      }}
+                      className="px-3"
+                    >
+                      Start Chat
+                    </Button>
+                  </div>
                 </div>
               </div>
             )}

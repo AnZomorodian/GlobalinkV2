@@ -59,10 +59,11 @@ export default function SettingsModal({ user, onClose }: SettingsModalProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Update profile mutation
+  // Update profile mutation with detailed error handling
   const updateProfileMutation = useMutation({
     mutationFn: async (data: any) => {
-      await apiRequest("PUT", "/api/auth/user", data);
+      const response = await apiRequest("PUT", "/api/auth/user", data);
+      return response;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
@@ -71,7 +72,7 @@ export default function SettingsModal({ user, onClose }: SettingsModalProps) {
         description: "Profile updated successfully",
       });
     },
-    onError: (error) => {
+    onError: (error: any) => {
       if (isUnauthorizedError(error)) {
         toast({
           title: "Unauthorized",
@@ -83,9 +84,23 @@ export default function SettingsModal({ user, onClose }: SettingsModalProps) {
         }, 500);
         return;
       }
+      
+      // Parse detailed error messages
+      let errorMessage = "Failed to update profile";
+      if (error?.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error?.response?.data?.errors) {
+        const errors = error.response.data.errors;
+        if (Array.isArray(errors) && errors.length > 0) {
+          errorMessage = errors.map((e: any) => e.message || e.path?.join('.') + ' is invalid').join(', ');
+        }
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+      
       toast({
-        title: "Error",
-        description: "Failed to update profile",
+        title: "Profile Update Failed",
+        description: errorMessage,
         variant: "destructive",
       });
     },
@@ -96,7 +111,20 @@ export default function SettingsModal({ user, onClose }: SettingsModalProps) {
   };
 
   const handleProfileSave = () => {
-    updateProfileMutation.mutate(profileData);
+    // Exclude email from the update data for security reasons
+    const { email, ...updateData } = profileData;
+    
+    // Validate required fields
+    if (!updateData.firstName?.trim() || !updateData.lastName?.trim()) {
+      toast({
+        title: "Validation Error",
+        description: "First name and last name are required fields.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    updateProfileMutation.mutate(updateData);
   };
 
   return (
@@ -167,11 +195,32 @@ export default function SettingsModal({ user, onClose }: SettingsModalProps) {
                             input.onchange = (e) => {
                               const file = (e.target as HTMLInputElement).files?.[0];
                               if (file) {
+                                // Validate file size (max 5MB)
+                                if (file.size > 5 * 1024 * 1024) {
+                                  toast({
+                                    title: "File Too Large",
+                                    description: "Please select an image smaller than 5MB.",
+                                    variant: "destructive",
+                                  });
+                                  return;
+                                }
+                                
+                                // Validate file type
+                                if (!file.type.startsWith('image/')) {
+                                  toast({
+                                    title: "Invalid File Type",
+                                    description: "Please select a valid image file (JPG, PNG, GIF).",
+                                    variant: "destructive",
+                                  });
+                                  return;
+                                }
+                                
                                 const reader = new FileReader();
                                 reader.onload = (e) => {
                                   const imageUrl = e.target?.result as string;
+                                  const { email, ...updateData } = profileData;
                                   updateProfileMutation.mutate({
-                                    ...profileData,
+                                    ...updateData,
                                     profileImageUrl: imageUrl
                                   });
                                 };
@@ -213,8 +262,11 @@ export default function SettingsModal({ user, onClose }: SettingsModalProps) {
                           id="email"
                           type="email"
                           value={profileData.email}
-                          onChange={(e) => setProfileData(prev => ({ ...prev, email: e.target.value }))}
+                          disabled
+                          className="bg-gray-100 cursor-not-allowed"
+                          title="Email cannot be changed for security reasons"
                         />
+                        <p className="text-xs text-gray-500 mt-1">Email cannot be changed for security reasons</p>
                       </div>
                       <div>
                         <Label htmlFor="department">Department</Label>
@@ -542,15 +594,128 @@ export default function SettingsModal({ user, onClose }: SettingsModalProps) {
                   <h3 className="text-lg font-semibold text-black mb-6">Account Settings</h3>
                   
                   <div className="space-y-6">
-                    <div className="border border-red-200 rounded-lg p-4">
-                      <h4 className="font-medium text-red-900 mb-2">Sign Out</h4>
-                      <p className="text-sm text-red-700 mb-4">
-                        Sign out of your account on this device
-                      </p>
-                      <Button variant="destructive" onClick={handleLogout}>
-                        Sign Out
-                      </Button>
-                    </div>
+                    {/* Account Information */}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-lg">Account Information</CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <Label className="text-sm font-medium text-gray-500">User ID</Label>
+                            <p className="text-sm font-mono bg-gray-100 p-2 rounded">{user.id}</p>
+                          </div>
+                          <div>
+                            <Label className="text-sm font-medium text-gray-500">Email</Label>
+                            <p className="text-sm bg-gray-100 p-2 rounded">{user.email}</p>
+                          </div>
+                          <div>
+                            <Label className="text-sm font-medium text-gray-500">Account Type</Label>
+                            <p className="text-sm bg-gray-100 p-2 rounded">Corporate User</p>
+                          </div>
+                          <div>
+                            <Label className="text-sm font-medium text-gray-500">Status</Label>
+                            <Badge variant="secondary" className="bg-green-100 text-green-800">Active</Badge>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Security Settings */}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-lg">Security & Privacy</CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <Label className="text-sm font-medium">Two-Factor Authentication</Label>
+                            <p className="text-xs text-gray-500">Add an extra layer of security to your account</p>
+                          </div>
+                          <Button variant="outline" size="sm" disabled>
+                            Coming Soon
+                          </Button>
+                        </div>
+                        <Separator />
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <Label className="text-sm font-medium">Login Sessions</Label>
+                            <p className="text-xs text-gray-500">Manage your active login sessions</p>
+                          </div>
+                          <Button variant="outline" size="sm" disabled>
+                            View Sessions
+                          </Button>
+                        </div>
+                        <Separator />
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <Label className="text-sm font-medium">Data Export</Label>
+                            <p className="text-xs text-gray-500">Download your data and conversation history</p>
+                          </div>
+                          <Button variant="outline" size="sm" disabled>
+                            Export Data
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Session Management */}
+                    <Card className="border-yellow-200 bg-yellow-50">
+                      <CardHeader>
+                        <CardTitle className="text-lg text-yellow-800">Session Information</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-sm text-yellow-700 space-y-2">
+                          <p><strong>Last Login:</strong> {new Date().toLocaleString()}</p>
+                          <p><strong>Session Duration:</strong> Active</p>
+                          <p><strong>Device:</strong> {navigator.userAgent.includes('Windows') ? 'Windows' : 
+                                                      navigator.userAgent.includes('Mac') ? 'macOS' : 
+                                                      navigator.userAgent.includes('Linux') ? 'Linux' : 'Unknown'} - 
+                                                      {navigator.userAgent.includes('Chrome') ? 'Chrome' : 
+                                                       navigator.userAgent.includes('Firefox') ? 'Firefox' : 
+                                                       navigator.userAgent.includes('Safari') ? 'Safari' : 'Unknown Browser'}</p>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Danger Zone */}
+                    <Card className="border-red-200 bg-red-50">
+                      <CardHeader>
+                        <CardTitle className="text-lg text-red-800">Danger Zone</CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <Label className="text-sm font-medium text-red-700">Sign Out</Label>
+                            <p className="text-xs text-red-600">Sign out of your account on this device</p>
+                          </div>
+                          <Button variant="destructive" onClick={handleLogout}>
+                            Sign Out
+                          </Button>
+                        </div>
+                        <Separator />
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <Label className="text-sm font-medium text-red-700">Clear Local Data</Label>
+                            <p className="text-xs text-red-600">Remove cached data and preferences from this device</p>
+                          </div>
+                          <Button 
+                            variant="outline" 
+                            className="border-red-300 text-red-700 hover:bg-red-100"
+                            onClick={() => {
+                              localStorage.clear();
+                              sessionStorage.clear();
+                              toast({
+                                title: "Local Data Cleared",
+                                description: "All cached data has been removed from this device.",
+                              });
+                            }}
+                          >
+                            Clear Data
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
                   </div>
                 </div>
               </TabsContent>
