@@ -14,6 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Reply, Copy, Paperclip, Send, Smile, Search, Phone, Video, Info, MoreHorizontal } from "lucide-react";
+import GlobalinkLogo from "./GlobalinkLogo";
 import type { User, Message } from "@shared/schema";
 
 interface ChatAreaProps {
@@ -189,10 +190,10 @@ export default function ChatArea({
       <div className="flex-1 flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <div className="w-24 h-24 mx-auto mb-4 bg-gray-200 rounded-full flex items-center justify-center">
-            <i className="fas fa-comments text-gray-400 text-3xl"></i>
+            <GlobalinkLogo className="w-12 h-12" />
           </div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Welcome to Corporate Messenger</h2>
-          <p className="text-gray-600">Select a contact to start messaging</p>
+          <h2 className="text-xl font-semibold text-black mb-2">Welcome to Globalink</h2>
+          <p className="text-black">Select a contact to start messaging</p>
         </div>
       </div>
     );
@@ -298,9 +299,9 @@ export default function ChatArea({
                     <div className={`rounded-2xl p-3 shadow-sm group relative transition-all hover:shadow-md ${
                       isOwn 
                         ? 'bg-gradient-to-r from-corp-blue to-blue-600 text-white' 
-                        : 'bg-white border border-gray-200 text-gray-900'
+                        : 'bg-white border border-gray-200 text-black'
                     }`}>
-                      <p className="text-sm leading-relaxed">{message.content}</p>
+                      <p className={`text-sm leading-relaxed ${isOwn ? 'text-white' : 'text-black'}`}>{message.content}</p>
                       
                       {/* Message Actions */}
                       <div className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-opacity">

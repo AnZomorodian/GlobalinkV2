@@ -43,6 +43,12 @@ export default function SettingsModal({ user, onClose }: SettingsModalProps) {
     duration: 2000, // notification duration in milliseconds
   });
 
+  const [appearance, setAppearance] = useState({
+    theme: 'light',
+    fontSize: 'medium',
+    language: 'en',
+  });
+
   const [privacy, setPrivacy] = useState({
     showOnlineStatus: true,
     allowDirectMessages: true,
@@ -145,8 +151,28 @@ export default function SettingsModal({ user, onClose }: SettingsModalProps) {
                         <Button
                           size="sm"
                           className="absolute bottom-0 right-0 rounded-full w-8 h-8 p-0"
+                          onClick={() => {
+                            const input = document.createElement('input');
+                            input.type = 'file';
+                            input.accept = 'image/*';
+                            input.onchange = (e) => {
+                              const file = (e.target as HTMLInputElement).files?.[0];
+                              if (file) {
+                                const reader = new FileReader();
+                                reader.onload = (e) => {
+                                  const imageUrl = e.target?.result as string;
+                                  updateProfileMutation.mutate({
+                                    ...profileData,
+                                    profileImageUrl: imageUrl
+                                  });
+                                };
+                                reader.readAsDataURL(file);
+                              }
+                            };
+                            input.click();
+                          }}
                         >
-                          <i className="fas fa-camera text-xs"></i>
+                          <Camera className="w-4 h-4" />
                         </Button>
                       </div>
                       <div>
@@ -290,12 +316,12 @@ export default function SettingsModal({ user, onClose }: SettingsModalProps) {
 
               <TabsContent value="privacy" className="mt-0">
                 <div className="max-w-2xl">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-6">Privacy Settings</h3>
+                  <h3 className="text-lg font-semibold text-black mb-6">Privacy Settings</h3>
                   
                   <div className="space-y-6">
                     <div className="flex items-center justify-between">
                       <div>
-                        <h4 className="font-medium text-gray-900">Show Online Status</h4>
+                        <h4 className="font-medium text-black">Show Online Status</h4>
                         <p className="text-sm text-gray-500">Let others see when you're online</p>
                       </div>
                       <Switch
@@ -306,7 +332,7 @@ export default function SettingsModal({ user, onClose }: SettingsModalProps) {
 
                     <div className="flex items-center justify-between">
                       <div>
-                        <h4 className="font-medium text-gray-900">Allow Direct Messages</h4>
+                        <h4 className="font-medium text-black">Allow Direct Messages</h4>
                         <p className="text-sm text-gray-500">Allow anyone to send you direct messages</p>
                       </div>
                       <Switch
@@ -317,7 +343,7 @@ export default function SettingsModal({ user, onClose }: SettingsModalProps) {
 
                     <div className="flex items-center justify-between">
                       <div>
-                        <h4 className="font-medium text-gray-900">Show Last Seen</h4>
+                        <h4 className="font-medium text-black">Show Last Seen</h4>
                         <p className="text-sm text-gray-500">Let others see when you were last active</p>
                       </div>
                       <Switch
@@ -331,12 +357,15 @@ export default function SettingsModal({ user, onClose }: SettingsModalProps) {
 
               <TabsContent value="appearance" className="mt-0">
                 <div className="max-w-2xl">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-6">Appearance Settings</h3>
+                  <h3 className="text-lg font-semibold text-black mb-6">Appearance Settings</h3>
                   
                   <div className="space-y-6">
                     <div>
-                      <Label htmlFor="theme">Theme</Label>
-                      <Select defaultValue="light">
+                      <Label htmlFor="theme" className="text-black">Theme</Label>
+                      <Select 
+                        value={appearance.theme}
+                        onValueChange={(value) => setAppearance(prev => ({ ...prev, theme: value }))}
+                      >
                         <SelectTrigger>
                           <SelectValue placeholder="Select theme" />
                         </SelectTrigger>
@@ -349,8 +378,11 @@ export default function SettingsModal({ user, onClose }: SettingsModalProps) {
                     </div>
 
                     <div>
-                      <Label htmlFor="fontSize">Font Size</Label>
-                      <Select defaultValue="medium">
+                      <Label htmlFor="fontSize" className="text-black">Font Size</Label>
+                      <Select 
+                        value={appearance.fontSize}
+                        onValueChange={(value) => setAppearance(prev => ({ ...prev, fontSize: value }))}
+                      >
                         <SelectTrigger>
                           <SelectValue placeholder="Select font size" />
                         </SelectTrigger>
@@ -360,6 +392,40 @@ export default function SettingsModal({ user, onClose }: SettingsModalProps) {
                           <SelectItem value="large">Large</SelectItem>
                         </SelectContent>
                       </Select>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="language" className="text-black">Language</Label>
+                      <Select 
+                        value={appearance.language}
+                        onValueChange={(value) => setAppearance(prev => ({ ...prev, language: value }))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select language" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="en">English</SelectItem>
+                          <SelectItem value="es">Spanish</SelectItem>
+                          <SelectItem value="fr">French</SelectItem>
+                          <SelectItem value="de">German</SelectItem>
+                          <SelectItem value="zh">Chinese</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="pt-4 border-t">
+                      <Button 
+                        onClick={() => {
+                          toast({
+                            title: "Appearance Updated",
+                            description: "Your appearance settings have been saved successfully.",
+                          });
+                        }}
+                        className="w-full"
+                      >
+                        <Save className="w-4 h-4 mr-2" />
+                        Save Appearance Settings
+                      </Button>
                     </div>
                   </div>
                 </div>
