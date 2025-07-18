@@ -30,7 +30,8 @@ export default function GlobalinkLogo({
       <img 
         src={globaLinkLogo} 
         alt="Globalink Logo" 
-        className={`${sizeClasses[size]} object-contain`}
+        className={`${sizeClasses[size]} object-contain bg-transparent`}
+        style={{ background: 'transparent' }}
       />
       {showText && (
         <span className={`font-bold text-white ${textSizes[size]} tracking-wide`}>

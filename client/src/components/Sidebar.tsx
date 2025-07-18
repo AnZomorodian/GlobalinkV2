@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { UserPlus, Settings, Search, LogOut, Plus, X, AlertCircle, MessageCircle } from "lucide-react";
+import { UserPlus, Settings, Search, LogOut, Plus, X, AlertCircle, MessageCircle, Users, MessageSquarePlus } from "lucide-react";
 import GlobalinkLogo from "./GlobalinkLogo";
 import type { User } from "@shared/schema";
 
@@ -235,14 +235,34 @@ export default function Sidebar({ currentUser, selectedContactId, onContactSelec
         </div>
       </div>
 
+      {/* Contact Actions */}
+      <div className="p-4 border-b border-white/10">
+        <div className="flex items-center justify-between space-x-2">
+          <Dialog open={showAddContact} onOpenChange={setShowAddContact}>
+            <DialogTrigger asChild>
+              <Button variant="ghost" size="sm" className="flex-1 h-10 bg-white/20 hover:bg-white/30 border border-white/20 rounded-xl transition-all duration-200">
+                <UserPlus className="w-4 h-4" />
+              </Button>
+            </DialogTrigger>
+          </Dialog>
+          
+          <Button variant="ghost" size="sm" className="h-10 w-10 bg-white/20 hover:bg-white/30 border border-white/20 rounded-xl transition-all duration-200">
+            <Users className="w-4 h-4" />
+          </Button>
+          
+          <Button variant="ghost" size="sm" className="h-10 w-10 bg-white/20 hover:bg-white/30 border border-white/20 rounded-xl transition-all duration-200" disabled>
+            <MessageSquarePlus className="w-4 h-4 opacity-50" />
+          </Button>
+        </div>
+        <div className="flex items-center justify-between mt-2 text-xs text-gray-400">
+          <span>Add Contact</span>
+          <span>Contacts</span>
+          <span>Group</span>
+        </div>
+      </div>
+
       {/* Add Contact Dialog */}
       <Dialog open={showAddContact} onOpenChange={setShowAddContact}>
-        <DialogTrigger asChild>
-          <Button className="mx-4 mb-4 modern-button floating-element">
-            <Plus className="w-4 h-4 mr-2" />
-            Add Contact
-          </Button>
-        </DialogTrigger>
         <DialogContent className="glass-card animate-slide-up">
           <DialogHeader>
             <DialogTitle className="text-xl font-semibold gradient-text">Add New Contact</DialogTitle>

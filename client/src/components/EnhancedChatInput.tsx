@@ -63,7 +63,8 @@ export default function EnhancedChatInput({
 
   const handleVoiceSend = async (audioBlob: Blob, duration: number) => {
     try {
-      // Convert blob to base64 for transmission
+      // Compress audio and convert to base64
+      const compressedBlob = await compressAudioBlob(audioBlob);
       const reader = new FileReader();
       reader.onloadend = () => {
         const base64data = reader.result as string;
@@ -72,11 +73,85 @@ export default function EnhancedChatInput({
           duration: duration
         });
       };
-      reader.readAsDataURL(audioBlob);
+      reader.readAsDataURL(compressedBlob);
     } catch (error) {
       console.error('Error sending voice message:', error);
     }
     setShowVoiceRecorder(false);
+  };
+
+  const compressAudioBlob = async (audioBlob: Blob): Promise<Blob> => {
+    return new Promise((resolve) => {
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const fileReader = new FileReader();
+      
+      fileReader.onload = async (event) => {
+        try {
+          const arrayBuffer = event.target?.result as ArrayBuffer;
+          const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+          
+          // Reduce sample rate for compression
+          const targetSampleRate = 16000; // Lower sample rate for voice
+          const ratio = audioBuffer.sampleRate / targetSampleRate;
+          const newLength = Math.round(audioBuffer.length / ratio);
+          
+          const offlineContext = new OfflineAudioContext(1, newLength, targetSampleRate);
+          const source = offlineContext.createBufferSource();
+          source.buffer = audioBuffer;
+          source.connect(offlineContext.destination);
+          source.start();
+          
+          const compressedBuffer = await offlineContext.startRendering();
+          
+          // Convert back to blob with lower quality
+          const wav = audioBufferToWav(compressedBuffer);
+          resolve(new Blob([wav], { type: 'audio/wav' }));
+        } catch (error) {
+          console.error('Audio compression failed:', error);
+          resolve(audioBlob); // Fall back to original if compression fails
+        }
+      };
+      
+      fileReader.readAsArrayBuffer(audioBlob);
+    });
+  };
+
+  const audioBufferToWav = (buffer: AudioBuffer): ArrayBuffer => {
+    const length = buffer.length;
+    const arrayBuffer = new ArrayBuffer(44 + length * 2);
+    const view = new DataView(arrayBuffer);
+    
+    // WAV header
+    const writeString = (offset: number, string: string) => {
+      for (let i = 0; i < string.length; i++) {
+        view.setUint8(offset + i, string.charCodeAt(i));
+      }
+    };
+    
+    writeString(0, 'RIFF');
+    view.setUint32(4, 36 + length * 2, true);
+    writeString(8, 'WAVE');
+    writeString(12, 'fmt ');
+    view.setUint32(16, 16, true);
+    view.setUint16(20, 1, true);
+    view.setUint16(22, 1, true);
+    view.setUint32(24, buffer.sampleRate, true);
+    view.setUint32(28, buffer.sampleRate * 2, true);
+    view.setUint16(32, 2, true);
+    view.setUint16(34, 16, true);
+    writeString(36, 'data');
+    view.setUint32(40, length * 2, true);
+    
+    // PCM data
+    const channelData = buffer.getChannelData(0);
+    let offset = 44;
+    for (let i = 0; i < length; i++) {
+      const sample = Math.max(-1, Math.min(1, channelData[i]));
+      view.setInt16(offset, sample < 0 ? sample * 0x8000 : sample * 0x7FFF, true);
+      offset += 2;
+    }
+    
+    return arrayBuffer;
   };
 
   const handleAttachmentClick = (type: string) => {

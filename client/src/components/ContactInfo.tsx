@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { X, ArrowLeft, Video, Phone, UserX, UserMinus, Share2, Mail } from "lucide-react";
+import { X, ArrowLeft, Video, Phone, UserX, UserMinus, Share2, Mail, Building, Building2, Briefcase, MapPin, Hash, Clock } from "lucide-react";
 import type { User } from "@shared/schema";
 
 interface ContactInfoProps {
@@ -185,19 +185,70 @@ export default function ContactInfo({ contactId, onClose }: ContactInfoProps) {
       {/* Contact Details */}
       <div className="p-4 border-b border-gray-200">
         <h4 className="text-sm font-medium text-gray-900 mb-3">Contact Details</h4>
-        <div className="space-y-2">
+        <div className="space-y-3">
           {contact.email && (
-            <div className="flex items-center space-x-2">
-              <i className="fas fa-envelope text-gray-400 w-4"></i>
-              <span className="text-sm text-gray-600">{contact.email}</span>
+            <div className="flex items-center space-x-3">
+              <Mail className="w-4 h-4 text-gray-400" />
+              <div>
+                <p className="text-sm text-gray-600">{contact.email}</p>
+                <p className="text-xs text-gray-400">Email Address</p>
+              </div>
             </div>
           )}
           {contact.department && (
-            <div className="flex items-center space-x-2">
-              <i className="fas fa-building text-gray-400 w-4"></i>
-              <span className="text-sm text-gray-600">{contact.department}</span>
+            <div className="flex items-center space-x-3">
+              <Building className="w-4 h-4 text-gray-400" />
+              <div>
+                <p className="text-sm text-gray-600">{contact.department}</p>
+                <p className="text-xs text-gray-400">Department</p>
+              </div>
             </div>
           )}
+          {contact.jobTitle && (
+            <div className="flex items-center space-x-3">
+              <Briefcase className="w-4 h-4 text-gray-400" />
+              <div>
+                <p className="text-sm text-gray-600">{contact.jobTitle}</p>
+                <p className="text-xs text-gray-400">Job Title</p>
+              </div>
+            </div>
+          )}
+          {contact.companyName && (
+            <div className="flex items-center space-x-3">
+              <Building2 className="w-4 h-4 text-gray-400" />
+              <div>
+                <p className="text-sm text-gray-600">{contact.companyName}</p>
+                <p className="text-xs text-gray-400">Company</p>
+              </div>
+            </div>
+          )}
+          {contact.location && (
+            <div className="flex items-center space-x-3">
+              <MapPin className="w-4 h-4 text-gray-400" />
+              <div>
+                <p className="text-sm text-gray-600">{contact.location}</p>
+                <p className="text-xs text-gray-400">Location</p>
+              </div>
+            </div>
+          )}
+          {contact.zinCode && (
+            <div className="flex items-center space-x-3">
+              <Hash className="w-4 h-4 text-gray-400" />
+              <div>
+                <p className="text-sm text-gray-600 font-mono">{contact.zinCode}</p>
+                <p className="text-xs text-gray-400">Zin Code</p>
+              </div>
+            </div>
+          )}
+          <div className="flex items-center space-x-3">
+            <Clock className="w-4 h-4 text-gray-400" />
+            <div>
+              <p className="text-sm text-gray-600">
+                {contact.createdAt ? new Date(contact.createdAt).toLocaleDateString() : 'Not available'}
+              </p>
+              <p className="text-xs text-gray-400">Member Since</p>
+            </div>
+          </div>
         </div>
       </div>
 

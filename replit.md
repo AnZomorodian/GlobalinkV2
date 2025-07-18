@@ -135,6 +135,15 @@ The application follows a monorepo structure with shared TypeScript types, makin
 
 ## Recent Changes
 
+### January 2025 - UI/UX Enhancement & Performance Optimization
+- **✓ Logo Background Fix**: Removed background from GLOBALINK logo for clean transparent appearance
+- **✓ Enhanced Contact Details**: Added comprehensive contact information display including job title, company, location, Zin code, and member since date
+- **✓ Voice Message Fix**: Fixed payload too large error by increasing Express limits to 50mb and implementing audio compression
+- **✓ Minimal Icon Design**: Redesigned add contact area with minimal icons for Add Contact, Contact List, and Create Group
+- **✓ Audio Compression**: Implemented advanced audio compression with 16kHz sample rate to reduce voice message payload size
+- **✓ Modern Contact Actions**: Added clean button layout with glass-morphism effects and proper hover states
+- **✓ Performance Optimization**: Enhanced voice message encoding with WAV compression for better transmission
+
 ### January 2025 - Migration & Logo Integration
 - **✓ Successful Migration**: Migrated project from Replit Agent to Replit environment
 - **✓ Database Setup**: Created PostgreSQL database and pushed schema successfully
