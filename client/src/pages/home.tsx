@@ -99,8 +99,19 @@ export default function Home() {
 
   if (isLoading) {
     return (
-      <div className="h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-corp-blue"></div>
+      <div className="h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 relative">
+        <div className="absolute inset-0 bg-gradient-to-t from-transparent via-transparent to-white/20"></div>
+        <div className="glass-card p-8 animate-pulse-slow">
+          <div className="flex flex-col items-center space-y-4">
+            <div className="w-16 h-16 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 animate-spin relative">
+              <div className="absolute inset-2 bg-white rounded-full"></div>
+            </div>
+            <div className="text-center space-y-2">
+              <h3 className="text-lg font-semibold gradient-text">Loading Globalink</h3>
+              <p className="text-gray-600 text-sm">Connecting to your workspace...</p>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -110,45 +121,58 @@ export default function Home() {
   }
 
   return (
-    <div className="h-screen flex overflow-hidden bg-gray-100">
-      <Sidebar
-        currentUser={user}
-        selectedContactId={selectedContactId}
-        onContactSelect={setSelectedContactId}
-        onSettingsOpen={() => setShowSettings(true)}
-      />
+    <div className="h-screen flex overflow-hidden relative">
+      {/* Ultra-modern gradient background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 -z-10"></div>
+      <div className="absolute inset-0 bg-gradient-to-t from-transparent via-transparent to-white/20 -z-10"></div>
       
-      <ChatArea
-        currentUser={user}
-        selectedContactId={selectedContactId}
-        onContactInfoToggle={() => setShowContactInfo(!showContactInfo)}
-        sendWsMessage={sendWsMessage}
-        onCallStart={(callType) => {
-          // Handle call initiation
-          console.log('Starting call:', callType);
-        }}
-      />
-      
-      {showContactInfo && selectedContactId && (
-        <ContactInfo
-          contactId={selectedContactId}
-          onClose={() => setShowContactInfo(false)}
-        />
-      )}
-      
-      {showSettings && (
-        <SettingsModal
-          user={user}
-          onClose={() => setShowSettings(false)}
-        />
-      )}
-      
-      {activeCall && (
-        <CallModal
-          call={activeCall}
+      {/* Main application container with animations */}
+      <div className="flex w-full animate-fade-in">
+        <Sidebar
           currentUser={user}
-          onEnd={() => setActiveCall(null)}
+          selectedContactId={selectedContactId}
+          onContactSelect={setSelectedContactId}
+          onSettingsOpen={() => setShowSettings(true)}
         />
+        
+        <ChatArea
+          currentUser={user}
+          selectedContactId={selectedContactId}
+          onContactInfoToggle={() => setShowContactInfo(!showContactInfo)}
+          sendWsMessage={sendWsMessage}
+          onCallStart={(callType) => {
+            // Handle call initiation
+            console.log('Starting call:', callType);
+          }}
+        />
+        
+        {showContactInfo && selectedContactId && (
+          <ContactInfo
+            contactId={selectedContactId}
+            onClose={() => setShowContactInfo(false)}
+          />
+        )}
+      </div>
+      
+      {/* Modern settings modal */}
+      {showSettings && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm animate-fade-in">
+          <SettingsModal
+            user={user}
+            onClose={() => setShowSettings(false)}
+          />
+        </div>
+      )}
+      
+      {/* Modern call modal */}
+      {activeCall && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm animate-fade-in">
+          <CallModal
+            call={activeCall}
+            currentUser={user}
+            onEnd={() => setActiveCall(null)}
+          />
+        </div>
       )}
     </div>
   );

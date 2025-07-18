@@ -14,6 +14,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Reply, Copy, Paperclip, Send, Smile, Search, Phone, Video, Info, MoreHorizontal } from "lucide-react";
+import EnhancedChatInput from './EnhancedChatInput';
+import ModernMessageBubble from './ModernMessageBubble';
 import GlobalinkLogo from "./GlobalinkLogo";
 import type { User, Message } from "@shared/schema";
 
@@ -187,13 +189,39 @@ export default function ChatArea({
 
   if (!selectedContactId) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="w-24 h-24 mx-auto mb-4 bg-gray-200 rounded-full flex items-center justify-center">
-            <GlobalinkLogo className="w-12 h-12" />
+      <div className="flex-1 flex flex-col glass-panel relative overflow-hidden">
+        {/* Background elements */}
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-50 via-blue-50 to-teal-50"></div>
+        <div className="absolute top-20 left-20 w-32 h-32 bg-purple-200/30 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-20 right-20 w-40 h-40 bg-blue-200/30 rounded-full blur-3xl"></div>
+        
+        <div className="flex-1 flex items-center justify-center relative z-10">
+          <div className="text-center space-y-6 animate-fade-in">
+            <div className="w-32 h-32 mx-auto mb-6 bg-gradient-to-br from-purple-400 to-blue-500 rounded-3xl flex items-center justify-center shadow-2xl floating-element">
+              <GlobalinkLogo className="w-16 h-16 text-white" />
+            </div>
+            <div className="space-y-3">
+              <h3 className="text-3xl font-bold gradient-text">Welcome to Globalink</h3>
+              <p className="text-gray-600 text-lg">Connect, collaborate, and communicate</p>
+              <p className="text-gray-500">Select a contact to start your conversation</p>
+            </div>
+            <div className="mt-8 space-y-2">
+              <div className="flex items-center justify-center space-x-6 text-sm text-gray-500">
+                <div className="flex items-center space-x-2">
+                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                  <span>Secure Messaging</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" style={{animationDelay: '0.5s'}}></div>
+                  <span>Voice & Video Calls</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse" style={{animationDelay: '1s'}}></div>
+                  <span>File Sharing</span>
+                </div>
+              </div>
+            </div>
           </div>
-          <h2 className="text-xl font-semibold text-black mb-2">Welcome to Globalink</h2>
-          <p className="text-black">Select a contact to start messaging</p>
         </div>
       </div>
     );
@@ -201,63 +229,71 @@ export default function ChatArea({
 
   return (
     <div className="flex-1 flex flex-col">
-      {/* Chat Header */}
-      <Card className="border-b border-gray-200 rounded-none bg-gradient-to-r from-corp-blue to-blue-600 text-white">
-        <CardContent className="p-4">
+      {/* Modern Chat Header */}
+      <div className="glass-panel border-b border-white/20 relative overflow-hidden">
+        {/* Background gradient */}
+        <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 via-blue-500/20 to-teal-500/20"></div>
+        <div className="absolute top-0 right-0 w-32 h-16 bg-white/10 rounded-full blur-2xl"></div>
+        
+        <div className="relative z-10 p-6">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <Avatar className="w-12 h-12 ring-2 ring-white/20">
-                <AvatarImage src={selectedContact?.profileImageUrl || ""} />
-                <AvatarFallback className="bg-white/20 text-white">
-                  {selectedContact?.firstName?.[0]}{selectedContact?.lastName?.[0]}
-                </AvatarFallback>
-              </Avatar>
+            <div className="flex items-center space-x-4">
+              <div className="relative">
+                <Avatar className="w-14 h-14 ring-3 ring-white/30 shadow-lg">
+                  <AvatarImage src={selectedContact?.profileImageUrl || ""} />
+                  <AvatarFallback className="bg-gradient-to-br from-purple-600 to-blue-600 text-white text-lg font-semibold">
+                    {selectedContact?.firstName?.[0]}{selectedContact?.lastName?.[0]}
+                  </AvatarFallback>
+                </Avatar>
+                <div className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-2 border-white ${
+                  selectedContact?.status === 'online' ? 'bg-green-400' :
+                  selectedContact?.status === 'away' ? 'bg-yellow-400' :
+                  selectedContact?.status === 'busy' ? 'bg-red-400' : 'bg-gray-300'
+                }`}></div>
+              </div>
               <div>
-                <h2 className="text-lg font-semibold">
+                <h2 className="text-xl font-bold text-gray-900">
                   {selectedContact?.firstName} {selectedContact?.lastName}
                 </h2>
                 <div className="flex items-center space-x-2">
-                  <div className={`w-2 h-2 rounded-full ${
-                    selectedContact?.status === 'online' ? 'bg-green-400' :
-                    selectedContact?.status === 'away' ? 'bg-yellow-400' :
-                    selectedContact?.status === 'busy' ? 'bg-red-400' : 'bg-gray-300'
-                  }`}></div>
-                  <p className="text-sm text-white/80">
+                  <span className="text-sm text-gray-600 font-medium">
                     {selectedContact?.status === 'online' ? 'Online' : 
                      selectedContact?.status === 'away' ? 'Away' :
-                     selectedContact?.status === 'busy' ? 'Busy' : 'Offline'} • ID: {selectedContact?.id}
-                  </p>
+                     selectedContact?.status === 'busy' ? 'Busy' : 'Offline'}
+                  </span>
+                  <span className="text-xs text-gray-500">•</span>
+                  <span className="text-xs text-gray-500 font-mono">ID: {selectedContact?.id}</span>
                 </div>
               </div>
             </div>
-            <div className="flex items-center space-x-1">
-              <Button variant="ghost" size="sm" onClick={() => onCallStart('voice')} className="hover:bg-white/10 text-black">
-                <Phone className="w-4 h-4 text-black" />
+            <div className="flex items-center space-x-2">
+              <Button variant="ghost" size="sm" onClick={() => onCallStart('voice')} className="h-10 w-10 p-0 hover:bg-white/20 rounded-xl floating-element">
+                <Phone className="w-5 h-5 text-gray-700" />
               </Button>
-              <Button variant="ghost" size="sm" onClick={() => onCallStart('video')} className="hover:bg-white/10 text-black">
-                <Video className="w-4 h-4 text-black" />
+              <Button variant="ghost" size="sm" onClick={() => onCallStart('video')} className="h-10 w-10 p-0 hover:bg-white/20 rounded-xl floating-element">
+                <Video className="w-5 h-5 text-gray-700" />
               </Button>
-              <Button variant="ghost" size="sm" onClick={onContactInfoToggle} className="hover:bg-white/10 text-black">
-                <Info className="w-4 h-4 text-black" />
+              <Button variant="ghost" size="sm" onClick={onContactInfoToggle} className="h-10 w-10 p-0 hover:bg-white/20 rounded-xl floating-element">
+                <Info className="w-5 h-5 text-gray-700" />
               </Button>
             </div>
           </div>
 
-          {/* Search Bar */}
-          <div className="mt-4">
+          {/* Modern Search Bar */}
+          <div className="mt-6">
             <div className="relative">
               <Input
                 type="text"
                 placeholder="Search messages..."
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
-                className="pl-10 bg-white/10 border-white/20 text-black placeholder:text-black/60 focus:bg-white/20"
+                className="pl-12 pr-4 py-3 bg-white/80 border border-white/30 rounded-2xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-transparent transition-all duration-200 backdrop-blur-sm"
               />
-              <Search className="absolute left-3 top-2.5 text-black w-4 h-4" />
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Messages Container */}
       <ScrollArea className="flex-1 p-4 bg-gradient-to-b from-gray-50 to-white">
@@ -345,109 +381,15 @@ export default function ChatArea({
         </div>
       </ScrollArea>
 
-      {/* Message Input */}
-      <Card className="border-t border-gray-200 rounded-none bg-white shadow-lg">
-        <CardContent className="p-4">
-          {/* Reply Preview */}
-          {replyTo && (
-            <div className="mb-3 p-3 bg-blue-50 rounded-lg border-l-4 border-corp-blue">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <Reply className="w-4 h-4 text-corp-blue" />
-                  <span className="text-sm text-gray-700 font-medium">
-                    Replying to {replyTo.sender?.firstName}
-                  </span>
-                </div>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={() => setReplyTo(null)}
-                  className="h-6 w-6 p-0 hover:bg-red-100"
-                >
-                  <span className="text-gray-400">×</span>
-                </Button>
-              </div>
-              <p className="text-xs text-gray-600 mt-1 truncate bg-white p-2 rounded">
-                {replyTo.content}
-              </p>
-            </div>
-          )}
-
-          <div className="flex items-end space-x-3">
-            <div className="flex space-x-1">
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={handleFileUpload}
-                className="hover:bg-gray-100 text-black"
-              >
-                <Paperclip className="w-4 h-4 text-black" />
-              </Button>
-              <input
-                ref={fileInputRef}
-                type="file"
-                className="hidden"
-                onChange={handleFileSelect}
-                accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.txt"
-              />
-            </div>
-            
-            <div className="flex-1">
-              <Textarea
-                ref={messageInputRef}
-                placeholder="Type a message..."
-                value={messageInput}
-                onChange={(e) => setMessageInput(e.target.value)}
-                onKeyPress={handleKeyPress}
-                disabled={sendMessageMutation.isPending}
-                className="min-h-[40px] max-h-[120px] resize-none border-2 border-gray-200 focus:border-corp-blue rounded-xl bg-gray-50 focus:bg-white transition-colors"
-                rows={1}
-              />
-            </div>
-            
-            <div className="flex items-center space-x-1">
-              <Popover open={showEmojiPicker} onOpenChange={setShowEmojiPicker}>
-                <PopoverTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    size="sm"
-                    className="hover:bg-gray-100 text-black"
-                  >
-                    <Smile className="w-4 h-4 text-black" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-80 p-4">
-                  <div className="grid grid-cols-6 gap-2">
-                    {emojis.map((emoji) => (
-                      <Button
-                        key={emoji}
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleEmojiSelect(emoji)}
-                        className="text-lg hover:bg-gray-100 h-8 w-8 p-0 rounded-full"
-                      >
-                        {emoji}
-                      </Button>
-                    ))}
-                  </div>
-                </PopoverContent>
-              </Popover>
-              
-              <Button 
-                onClick={handleSendMessage}
-                disabled={!messageInput.trim() || sendMessageMutation.isPending}
-                className="bg-gradient-to-r from-corp-blue to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-full w-10 h-10 p-0 shadow-lg hover:shadow-xl transition-all"
-              >
-                {sendMessageMutation.isPending ? (
-                  <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></div>
-                ) : (
-                  <Send className="w-4 h-4" />
-                )}
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Enhanced Message Input */}
+      <EnhancedChatInput
+        messageText={messageInput}
+        setMessageText={setMessageInput}
+        onSendMessage={handleSendMessage}
+        onKeyPress={handleKeyPress}
+        onInputChange={(e) => setMessageInput(e.target.value)}
+        isLoading={sendMessageMutation.isPending}
+      />
     </div>
   );
 }

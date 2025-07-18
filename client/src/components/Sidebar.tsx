@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { UserPlus, Settings, Search, LogOut, Plus, X, AlertCircle } from "lucide-react";
+import { UserPlus, Settings, Search, LogOut, Plus, X, AlertCircle, MessageCircle } from "lucide-react";
 import GlobalinkLogo from "./GlobalinkLogo";
 import type { User } from "@shared/schema";
 
@@ -138,120 +138,127 @@ export default function Sidebar({ currentUser, selectedContactId, onContactSelec
   };
 
   return (
-    <div className="w-80 bg-white border-r border-gray-200 flex flex-col">
+    <div className="w-80 glass-card border-r border-white/20 flex flex-col backdrop-blur-xl">
       {/* Header */}
-      <div className="p-4 border-b border-gray-200 bg-gradient-to-r from-corp-blue to-blue-600 text-white">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center space-x-3">
-            <GlobalinkLogo className="w-8 h-8" />
-            <div>
-              <h1 className="text-lg font-bold">Globalink</h1>
-              <p className="text-xs text-blue-100">Corporate Messenger</p>
-            </div>
-          </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onSettingsOpen}
-            className="h-8 w-8 p-0 hover:bg-white/10 text-black"
-          >
-            <Settings className="w-4 h-4 text-black" />
-          </Button>
-        </div>
-
+      <div className="p-6 border-b border-white/10 relative overflow-hidden">
+        {/* Background gradient */}
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-600/20 via-blue-600/20 to-teal-600/20"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/5 to-transparent"></div>
         
-        <div className="flex items-center space-x-3">
-          <Avatar className="w-10 h-10 ring-2 ring-white/20">
-            <AvatarImage src={currentUser.profileImageUrl || ""} />
-            <AvatarFallback className="bg-white/20 text-white">
-              {currentUser.firstName?.[0]}{currentUser.lastName?.[0]}
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex-1">
-            <h2 className="text-sm font-semibold text-white">
-              {currentUser.firstName} {currentUser.lastName}
-            </h2>
-            <div className="flex items-center space-x-2">
-              <div className={`w-2 h-2 rounded-full ${
-                currentUser.status === 'online' ? 'bg-green-400' :
-                currentUser.status === 'away' ? 'bg-yellow-400' :
-                currentUser.status === 'busy' ? 'bg-red-400' : 'bg-gray-300'
+        <div className="relative z-10">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+                <GlobalinkLogo className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold gradient-text">Globalink</h1>
+                <p className="text-xs text-gray-500">Next-Gen Messenger</p>
+              </div>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onSettingsOpen}
+              className="h-10 w-10 p-0 hover:bg-white/10 rounded-xl floating-element"
+            >
+              <Settings className="w-5 h-5 text-gray-600" />
+            </Button>
+          </div>
+
+          <div className="flex items-center space-x-4">
+            <div className="relative">
+              <Avatar className="w-12 h-12 ring-3 ring-white/20 shadow-lg">
+                <AvatarImage src={currentUser.profileImageUrl || ""} />
+                <AvatarFallback className="bg-gradient-to-br from-purple-600 to-blue-600 text-white font-semibold">
+                  {currentUser.firstName?.[0]}{currentUser.lastName?.[0]}
+                </AvatarFallback>
+              </Avatar>
+              <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white shadow-sm ${
+                currentUser.status === 'online' ? 'status-online' :
+                currentUser.status === 'away' ? 'status-away' :
+                currentUser.status === 'busy' ? 'status-busy' : 'status-offline'
               }`}></div>
+            </div>
+            <div className="flex-1">
+              <h2 className="text-sm font-semibold text-gray-900">
+                {currentUser.firstName} {currentUser.lastName}
+              </h2>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="text-xs text-white/80 hover:text-white capitalize">
-                    {currentUser.status || 'offline'}
+                  <button className="text-xs text-gray-500 hover:text-gray-700 capitalize transition-colors">
+                    {currentUser.status || 'offline'} • Click to change
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                  <DropdownMenuItem onClick={() => updateStatusMutation.mutate('online')}>
-                    <div className="flex items-center space-x-2">
-                      <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                      <span className="text-black">Online</span>
+                <DropdownMenuContent className="glass-card">
+                  <DropdownMenuItem onClick={() => updateStatusMutation.mutate('online')} className="hover:bg-green-50">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-3 h-3 rounded-full status-online"></div>
+                      <span className="text-gray-900">Online</span>
                     </div>
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => updateStatusMutation.mutate('away')}>
-                    <div className="flex items-center space-x-2">
-                      <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
-                      <span className="text-black">Away</span>
+                  <DropdownMenuItem onClick={() => updateStatusMutation.mutate('away')} className="hover:bg-yellow-50">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-3 h-3 rounded-full status-away"></div>
+                      <span className="text-gray-900">Away</span>
                     </div>
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => updateStatusMutation.mutate('busy')}>
-                    <div className="flex items-center space-x-2">
-                      <div className="w-2 h-2 rounded-full bg-red-500"></div>
-                      <span className="text-black">Busy</span>
+                  <DropdownMenuItem onClick={() => updateStatusMutation.mutate('busy')} className="hover:bg-red-50">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-3 h-3 rounded-full status-busy"></div>
+                      <span className="text-gray-900">Busy</span>
                     </div>
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => updateStatusMutation.mutate('offline')}>
-                    <div className="flex items-center space-x-2">
-                      <div className="w-2 h-2 rounded-full bg-gray-300"></div>
-                      <span className="text-black">Offline</span>
+                  <DropdownMenuItem onClick={() => updateStatusMutation.mutate('offline')} className="hover:bg-gray-50">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-3 h-3 rounded-full status-offline"></div>
+                      <span className="text-gray-900">Offline</span>
                     </div>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
+              <p className="text-xs text-gray-400 font-mono">ID: {currentUser.id}</p>
             </div>
-            <p className="text-xs text-white/70">ID: {currentUser.id}</p>
           </div>
         </div>
+      </div>
 
-        {/* Search Bar */}
-        <div className="mt-4">
-          <div className="relative">
-            <Input
-              type="text"
-              placeholder="Search contacts..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 bg-white/10 border-white/20 text-black placeholder:text-black/60 focus:bg-white/20"
-            />
-            <Search className="absolute left-3 top-2.5 text-black w-4 h-4" />
-          </div>
+      {/* Search Bar */}
+      <div className="p-4 border-b border-white/10">
+        <div className="relative">
+          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+          <input
+            type="text"
+            placeholder="Search conversations..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-12 pr-4 py-3 bg-white/50 border border-white/20 rounded-2xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-transparent transition-all duration-200 backdrop-blur-sm"
+          />
         </div>
       </div>
 
       {/* Add Contact Dialog */}
       <Dialog open={showAddContact} onOpenChange={setShowAddContact}>
         <DialogTrigger asChild>
-          <Button variant="outline" className="mx-4 mb-4 border-gray-300 text-black hover:bg-gray-50">
-            <Plus className="w-4 h-4 mr-2 text-black" />
+          <Button className="mx-4 mb-4 modern-button floating-element">
+            <Plus className="w-4 h-4 mr-2" />
             Add Contact
           </Button>
         </DialogTrigger>
-        <DialogContent>
+        <DialogContent className="glass-card animate-slide-up">
           <DialogHeader>
-            <DialogTitle className="text-black">Add New Contact</DialogTitle>
+            <DialogTitle className="text-xl font-semibold gradient-text">Add New Contact</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
+          <div className="space-y-6">
             <div>
-              <label className="text-sm font-medium text-black">Enter User ID</label>
+              <label className="text-sm font-medium text-gray-900 mb-2 block">Enter User ID</label>
               <Input
                 placeholder="Enter user ID to search..."
                 value={addContactId}
                 onChange={(e) => {
                   setAddContactId(e.target.value);
                 }}
-                className="text-black"
+                className="chat-input"
               />
             </div>
             
@@ -308,52 +315,64 @@ export default function Sidebar({ currentUser, selectedContactId, onContactSelec
 
 
       {/* Contact List */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="px-4 py-2">
-          <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider">Recent Chats</h3>
+      <div className="flex-1 overflow-y-auto custom-scrollbar">
+        <div className="px-4 py-3">
+          <h3 className="text-xs font-medium text-gray-400 uppercase tracking-wider">Recent Chats</h3>
         </div>
         
         {chatsLoading ? (
-          <div className="px-4 py-8 text-center text-gray-500">
-            Loading chats...
+          <div className="px-4 py-8 text-center">
+            <div className="animate-pulse-soft">
+              <div className="w-8 h-8 bg-gradient-to-br from-purple-600 to-blue-600 rounded-full mx-auto mb-3"></div>
+              <p className="text-gray-500">Loading chats...</p>
+            </div>
           </div>
         ) : recentChats.length === 0 ? (
-          <div className="px-4 py-8 text-center text-gray-500">
-            No recent chats
+          <div className="px-4 py-8 text-center">
+            <div className="w-12 h-12 bg-gradient-to-br from-gray-200 to-gray-300 rounded-full mx-auto mb-3 flex items-center justify-center">
+              <MessageCircle className="w-6 h-6 text-gray-500" />
+            </div>
+            <p className="text-gray-500">No recent chats</p>
           </div>
         ) : (
-          <div className="space-y-1">
+          <div className="space-y-1 px-2">
             {recentChats.map((chat: any) => (
               <div
                 key={chat.id}
                 onClick={() => onContactSelect(chat.id)}
-                className={`px-4 py-3 hover:bg-gray-50 cursor-pointer border-l-4 ${
-                  selectedContactId === chat.id ? 'border-corp-blue bg-blue-50' : 'border-transparent'
+                className={`px-4 py-4 hover:bg-white/50 cursor-pointer rounded-xl transition-all duration-200 animate-fade-in ${
+                  selectedContactId === chat.id ? 
+                    'bg-gradient-to-r from-purple-100 to-blue-100 shadow-lg border border-purple-200' : 
+                    'hover:shadow-md'
                 }`}
               >
                 <div className="flex items-center space-x-3">
-                  <Avatar className="w-10 h-10">
-                    <AvatarImage src={chat.profileImageUrl || ""} />
-                    <AvatarFallback>
-                      {chat.firstName?.[0]}{chat.lastName?.[0]}
-                    </AvatarFallback>
-                  </Avatar>
+                  <div className="relative">
+                    <Avatar className="w-12 h-12 ring-2 ring-white/50 shadow-sm">
+                      <AvatarImage src={chat.profileImageUrl || ""} />
+                      <AvatarFallback className="bg-gradient-to-br from-purple-600 to-blue-600 text-white">
+                        {chat.firstName?.[0]}{chat.lastName?.[0]}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white ${
+                      chat.status === 'online' ? 'status-online' :
+                      chat.status === 'away' ? 'status-away' :
+                      chat.status === 'busy' ? 'status-busy' : 'status-offline'
+                    }`}></div>
+                  </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
-                      <p className="text-sm font-medium text-gray-900 truncate">
+                      <p className="text-sm font-semibold text-gray-900 truncate">
                         {chat.firstName} {chat.lastName}
                       </p>
-                      <div className="flex items-center space-x-1">
-                        <div className={`w-2 h-2 rounded-full ${getStatusColor(chat.status || 'offline')}`}></div>
-                        {chat.lastMessage && (
-                          <span className="text-xs text-gray-500">
-                            {formatTime(chat.lastMessage.createdAt)}
-                          </span>
-                        )}
-                      </div>
+                      {chat.lastMessage && (
+                        <span className="text-xs text-gray-400 font-medium">
+                          {formatTime(chat.lastMessage.createdAt)}
+                        </span>
+                      )}
                     </div>
                     {chat.lastMessage && (
-                      <p className="text-xs text-gray-500 truncate">
+                      <p className="text-xs text-gray-500 truncate mt-1">
                         {chat.lastMessage.content}
                       </p>
                     )}

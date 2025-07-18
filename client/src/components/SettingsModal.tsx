@@ -15,8 +15,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { User, Building, Bell, Palette, Camera, Save, X, Info } from "lucide-react";
+import { User, Building, Bell, Palette, Camera, Save, X, Info, Settings } from "lucide-react";
 import GlobalinkLogo from "./GlobalinkLogo";
+import AdvancedFeaturesPack from "./AdvancedFeaturesPack";
 import type { User as UserType } from "@shared/schema";
 
 interface SettingsModalProps {
@@ -131,6 +132,10 @@ export default function SettingsModal({ user, onClose }: SettingsModalProps) {
               <TabsTrigger value="account" className="w-full justify-start">
                 <Settings className="mr-3 h-4 w-4" />
                 Account
+              </TabsTrigger>
+              <TabsTrigger value="advanced" className="w-full justify-start">
+                <Settings className="w-4 h-4 mr-3" />
+                Advanced Features
               </TabsTrigger>
               <TabsTrigger value="about" className="w-full justify-start">
                 <Info className="w-4 h-4 mr-3" />
@@ -547,6 +552,25 @@ export default function SettingsModal({ user, onClose }: SettingsModalProps) {
                       </Button>
                     </div>
                   </div>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="advanced" className="mt-0">
+                <div className="max-w-4xl">
+                  <h3 className="text-lg font-semibold text-black mb-6">Advanced Features</h3>
+                  <AdvancedFeaturesPack 
+                    user={user}
+                    onFeatureToggle={(feature, enabled) => {
+                      console.log(`Feature ${feature} ${enabled ? 'enabled' : 'disabled'}`);
+                      toast({
+                        title: `Feature ${enabled ? 'Enabled' : 'Disabled'}`,
+                        description: `${feature.replace(/([A-Z])/g, ' $1').trim()} has been ${enabled ? 'enabled' : 'disabled'}`,
+                      });
+                    }}
+                    onSettingChange={(setting, value) => {
+                      console.log(`Setting ${setting} changed to:`, value);
+                    }}
+                  />
                 </div>
               </TabsContent>
 

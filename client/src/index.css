@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -24,12 +26,26 @@
   --ring: hsl(0, 0%, 0%);
   --radius: 0.5rem;
   
-  /* Corporate messenger colors */
-  --corp-blue: hsl(207, 90%, 54%);
+  /* Modern messenger colors */
+  --corp-blue: hsl(220, 91%, 24%);
   --corp-slate: hsl(215, 16%, 47%);
   --corp-success: hsl(142, 71%, 45%);
   --corp-error: hsl(0, 84%, 60%);
   --corp-warning: hsl(45, 93%, 47%);
+  --corp-purple: hsl(262, 83%, 58%);
+  --corp-orange: hsl(25, 95%, 53%);
+  --corp-teal: hsl(173, 80%, 40%);
+  
+  /* Gradient variables */
+  --gradient-primary: linear-gradient(135deg, hsl(220, 91%, 24%) 0%, hsl(262, 83%, 58%) 100%);
+  --gradient-secondary: linear-gradient(135deg, hsl(173, 80%, 40%) 0%, hsl(207, 90%, 54%) 100%);
+  --gradient-accent: linear-gradient(135deg, hsl(25, 95%, 53%) 0%, hsl(45, 93%, 47%) 100%);
+  --gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+  
+  /* Shadows and effects */
+  --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.1);
+  --shadow-elevation: 0 4px 20px rgba(0, 0, 0, 0.1);
+  --shadow-floating: 0 12px 40px rgba(0, 0, 0, 0.15);
 }
 
 .dark {
@@ -60,8 +76,14 @@
   }
 
   body {
-    @apply font-sans antialiased bg-background text-foreground;
+    @apply font-sans antialiased;
     font-family: 'Inter', sans-serif;
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    min-height: 100vh;
+  }
+
+  .dark body {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
   }
 }
 
@@ -127,19 +149,217 @@
   color: #374151;
 }
 
-/* Status icons with proper colors */
-.status-online .lucide {
-  color: #10b981;
+/* Glass morphism effects */
+.glass-morphism {
+  background: var(--gradient-glass);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: var(--shadow-glass);
 }
 
-.status-away .lucide {
-  color: #f59e0b;
+.glass-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: var(--shadow-elevation);
 }
 
-.status-busy .lucide {
-  color: #ef4444;
+.dark .glass-card {
+  background: rgba(30, 41, 59, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.status-offline .lucide {
-  color: #6b7280;
+/* Floating elements */
+.floating-element {
+  box-shadow: var(--shadow-floating);
+  transform: translateY(0);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.floating-element:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+}
+
+/* Gradient text */
+.gradient-text {
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 600;
+}
+
+/* Modern buttons */
+.modern-button {
+  background: var(--gradient-primary);
+  border: none;
+  color: white;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.modern-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.modern-button:hover::before {
+  left: 100%;
+}
+
+/* Status indicators with modern design */
+.status-indicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  position: relative;
+  display: inline-block;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+}
+
+.status-online {
+  background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.status-away {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.status-busy {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+.status-offline {
+  background: linear-gradient(135deg, #6b7280, #4b5563);
+}
+
+/* Animation utilities */
+.animate-pulse-soft {
+  animation: pulse-soft 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse-soft {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.5s ease-out;
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Modern scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+/* Message bubble improvements */
+.message-bubble {
+  position: relative;
+  padding: 12px 16px;
+  border-radius: 18px;
+  max-width: 70%;
+  word-wrap: break-word;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+}
+
+.message-bubble.sent {
+  background: var(--gradient-primary);
+  color: white;
+  margin-left: auto;
+}
+
+.message-bubble.received {
+  background: rgba(255, 255, 255, 0.9);
+  color: #1f2937;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.dark .message-bubble.received {
+  background: rgba(30, 41, 59, 0.9);
+  color: #f8fafc;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Improved chat input */
+.chat-input {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 24px;
+  padding: 12px 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.chat-input:focus {
+  outline: none;
+  border-color: hsl(220, 91%, 24%);
+  box-shadow: 0 0 0 3px rgba(34, 60, 138, 0.1);
+}
+
+.dark .chat-input {
+  background: rgba(30, 41, 59, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #f8fafc;
+}
+
+/* Typography improvements */
+.text-gradient {
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }

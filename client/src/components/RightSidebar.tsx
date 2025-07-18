@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Switch } from '@/components/ui/switch';
 import { OnlineIndicator } from '@/components/ui/online-indicator';
-import { X } from 'lucide-react';
+import { X, Users } from 'lucide-react';
 import type { User, ChatWithMembers } from '@shared/schema';
 
 interface RightSidebarProps {
