@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { X, ArrowLeft } from "lucide-react";
+import { X, ArrowLeft, Video, Phone, UserX, UserMinus, Share2, Mail } from "lucide-react";
 import type { User } from "@shared/schema";
 
 interface ContactInfoProps {
@@ -201,15 +201,75 @@ export default function ContactInfo({ contactId, onClose }: ContactInfoProps) {
         </div>
       </div>
 
-      {/* Actions */}
+      {/* Quick Actions */}
+      <div className="p-4 border-b border-gray-200">
+        <h4 className="text-sm font-medium text-gray-900 mb-3">Quick Actions</h4>
+        <div className="grid grid-cols-3 gap-3">
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex flex-col items-center justify-center h-16 p-2 hover:bg-blue-50 hover:border-blue-200"
+            onClick={() => {
+              // Handle video call
+              console.log('Starting video call with', contact.id);
+            }}
+          >
+            <Video className="w-5 h-5 text-blue-600 mb-1" />
+            <span className="text-xs text-gray-700">Video Call</span>
+          </Button>
+          
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex flex-col items-center justify-center h-16 p-2 hover:bg-green-50 hover:border-green-200"
+            onClick={() => {
+              // Handle voice call
+              console.log('Starting voice call with', contact.id);
+            }}
+          >
+            <Phone className="w-5 h-5 text-green-600 mb-1" />
+            <span className="text-xs text-gray-700">Voice Call</span>
+          </Button>
+          
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex flex-col items-center justify-center h-16 p-2 hover:bg-red-50 hover:border-red-200"
+            onClick={() => {
+              // Handle block user
+              console.log('Blocking user', contact.id);
+            }}
+          >
+            <UserX className="w-5 h-5 text-red-600 mb-1" />
+            <span className="text-xs text-gray-700">Block</span>
+          </Button>
+        </div>
+      </div>
+
+      {/* Additional Actions */}
       <div className="p-4 space-y-3">
-        <Button className="w-full bg-corp-blue hover:bg-blue-700">
-          <i className="fas fa-phone mr-2"></i>
-          Voice Call
+        <Button
+          variant="outline"
+          className="w-full hover:bg-gray-50"
+          onClick={() => {
+            // Handle share contact
+            console.log('Sharing contact', contact.id);
+          }}
+        >
+          <Share2 className="w-4 h-4 mr-2" />
+          Share Contact
         </Button>
-        <Button className="w-full bg-green-600 hover:bg-green-700">
-          <i className="fas fa-video mr-2"></i>
-          Video Call
+
+        <Button
+          variant="outline"
+          className="w-full hover:bg-blue-50"
+          onClick={() => {
+            // Handle send email
+            window.open(`mailto:${contact.email}`, '_blank');
+          }}
+        >
+          <Mail className="w-4 h-4 mr-2" />
+          Send Email
         </Button>
         
         <Separator />
@@ -220,17 +280,18 @@ export default function ContactInfo({ contactId, onClose }: ContactInfoProps) {
           onClick={() => blockContactMutation.mutate()}
           disabled={blockContactMutation.isPending}
         >
-          <i className="fas fa-user-slash mr-2"></i>
-          Block Contact
+          <UserX className="w-4 h-4 mr-2" />
+          {blockContactMutation.isPending ? "Blocking..." : "Block Contact"}
         </Button>
+        
         <Button
           variant="outline"
           className="w-full text-red-600 border-red-200 hover:bg-red-50"
           onClick={() => removeContactMutation.mutate()}
           disabled={removeContactMutation.isPending}
         >
-          <i className="fas fa-user-minus mr-2"></i>
-          Remove Contact
+          <UserMinus className="w-4 h-4 mr-2" />
+          {removeContactMutation.isPending ? "Removing..." : "Remove Contact"}
         </Button>
       </div>
     </div>

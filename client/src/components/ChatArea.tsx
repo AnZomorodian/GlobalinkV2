@@ -15,6 +15,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Reply, Copy, Paperclip, Send, Smile, Search, Phone, Video, Info, MoreHorizontal } from "lucide-react";
 import EnhancedChatInput from './EnhancedChatInput';
+import VoiceMessagePlayer from './VoiceMessagePlayer';
 import ModernMessageBubble from './ModernMessageBubble';
 import GlobalinkLogo from "./GlobalinkLogo";
 import type { User, Message } from "@shared/schema";
@@ -68,13 +69,19 @@ export default function ChatArea({
 
   // Send message mutation
   const sendMessageMutation = useMutation({
-    mutationFn: async (content: string) => {
-      await apiRequest("POST", "/api/messages", {
+    mutationFn: async ({ content, type = "text", audioData }: { content: string, type?: string, audioData?: any }) => {
+      const payload: any = {
         receiverId: selectedContactId,
         content,
-        messageType: "text",
+        messageType: type,
         replyToId: replyTo?.id || null,
-      });
+      };
+      
+      if (audioData) {
+        payload.audioData = audioData;
+      }
+      
+      await apiRequest("POST", "/api/messages", payload);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/messages", selectedContactId] });
@@ -123,9 +130,10 @@ export default function ChatArea({
     }
   }, [selectedContactId, queryClient]);
 
-  const handleSendMessage = () => {
-    if (!messageInput.trim() || !selectedContactId) return;
-    sendMessageMutation.mutate(messageInput);
+  const handleSendMessage = (content?: string, type?: string, audioData?: any) => {
+    const messageContent = content || messageInput.trim();
+    if (!messageContent || !selectedContactId) return;
+    sendMessageMutation.mutate({ content: messageContent, type, audioData });
   };
 
   const handleReply = (message: any) => {
@@ -337,11 +345,19 @@ export default function ChatArea({
                         ? 'message-bubble-own' 
                         : 'message-bubble-other'
                     }`}>
-                      <p className={`text-sm leading-relaxed message-text ${
-                        isOwn ? 'text-white' : 'text-visible'
-                      }`}>
-                        {message.content}
-                      </p>
+                      {message.messageType === 'voice' && message.audioData ? (
+                        <VoiceMessagePlayer 
+                          audioData={message.audioData.audio}
+                          duration={message.audioData.duration}
+                          isOwn={isOwn}
+                        />
+                      ) : (
+                        <p className={`text-sm leading-relaxed message-text ${
+                          isOwn ? 'text-white' : 'text-visible'
+                        }`}>
+                          {message.content}
+                        </p>
+                      )}
                       
                       {/* Message Actions */}
                       <div className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-opacity">

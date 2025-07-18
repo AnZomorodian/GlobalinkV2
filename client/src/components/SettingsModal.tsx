@@ -42,6 +42,13 @@ export default function SettingsModal({ user, onClose }: SettingsModalProps) {
     desktop: true,
     email: false,
     duration: 2000, // notification duration in milliseconds
+    doNotDisturb: false,
+    quietHoursStart: "22:00",
+    quietHoursEnd: "08:00",
+    priorityContacts: true,
+    keywordAlerts: false,
+    vibrate: true,
+    soundType: "default",
   });
 
   const [appearance, setAppearance] = useState({
@@ -405,6 +412,117 @@ export default function SettingsModal({ user, onClose }: SettingsModalProps) {
                           <SelectItem value="10000">10 seconds</SelectItem>
                         </SelectContent>
                       </Select>
+                    </div>
+
+                    <Separator />
+
+                    <div className="space-y-4">
+                      <h4 className="font-medium text-black">Advanced Notification Settings</h4>
+                      
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h5 className="font-medium text-gray-900">Do Not Disturb</h5>
+                          <p className="text-sm text-gray-500">Disable notifications during quiet hours</p>
+                        </div>
+                        <Switch
+                          checked={notifications.doNotDisturb}
+                          onCheckedChange={(checked) => setNotifications(prev => ({ ...prev, doNotDisturb: checked }))}
+                        />
+                      </div>
+
+                      {notifications.doNotDisturb && (
+                        <div className="ml-6 space-y-3 border-l-2 border-gray-200 pl-4">
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <label className="text-sm font-medium text-gray-700">Start Time</label>
+                              <input
+                                type="time"
+                                value={notifications.quietHoursStart}
+                                onChange={(e) => setNotifications(prev => ({ ...prev, quietHoursStart: e.target.value }))}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-sm font-medium text-gray-700">End Time</label>
+                              <input
+                                type="time"
+                                value={notifications.quietHoursEnd}
+                                onChange={(e) => setNotifications(prev => ({ ...prev, quietHoursEnd: e.target.value }))}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h5 className="font-medium text-gray-900">Priority Contacts</h5>
+                          <p className="text-sm text-gray-500">Always receive notifications from important contacts</p>
+                        </div>
+                        <Switch
+                          checked={notifications.priorityContacts}
+                          onCheckedChange={(checked) => setNotifications(prev => ({ ...prev, priorityContacts: checked }))}
+                        />
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h5 className="font-medium text-gray-900">Keywords Alerts</h5>
+                          <p className="text-sm text-gray-500">Get notified when specific keywords are mentioned</p>
+                        </div>
+                        <Switch
+                          checked={notifications.keywordAlerts}
+                          onCheckedChange={(checked) => setNotifications(prev => ({ ...prev, keywordAlerts: checked }))}
+                        />
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h5 className="font-medium text-gray-900">Vibrate on Mobile</h5>
+                          <p className="text-sm text-gray-500">Enable vibration for mobile notifications</p>
+                        </div>
+                        <Switch
+                          checked={notifications.vibrate}
+                          onCheckedChange={(checked) => setNotifications(prev => ({ ...prev, vibrate: checked }))}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <h5 className="font-medium text-gray-900">Notification Sound</h5>
+                        <p className="text-sm text-gray-500">Choose your notification sound</p>
+                        <Select 
+                          value={notifications.soundType}
+                          onValueChange={(value) => setNotifications(prev => ({ ...prev, soundType: value }))}
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Select sound" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="default">Default</SelectItem>
+                            <SelectItem value="chime">Chime</SelectItem>
+                            <SelectItem value="ping">Ping</SelectItem>
+                            <SelectItem value="bubble">Bubble</SelectItem>
+                            <SelectItem value="bell">Bell</SelectItem>
+                            <SelectItem value="none">Silent</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    <div className="pt-4 border-t">
+                      <Button 
+                        onClick={() => {
+                          toast({
+                            title: "Notification Settings Saved",
+                            description: "Your notification preferences have been updated successfully.",
+                          });
+                        }}
+                        className="w-full"
+                      >
+                        <Bell className="w-4 h-4 mr-2" />
+                        Save Notification Settings
+                      </Button>
                     </div>
                   </div>
                 </div>

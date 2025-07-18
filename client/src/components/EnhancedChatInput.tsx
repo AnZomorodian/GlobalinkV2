@@ -1,12 +1,15 @@
 import { useState, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
-import { Send, Paperclip, Smile, Mic, Image, FileText } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import { Send, Paperclip, Smile, Mic, Image, FileText, Camera, Music, Video } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Separator } from '@/components/ui/separator';
+import VoiceRecorder from './VoiceRecorder';
 
 interface EnhancedChatInputProps {
   messageText: string;
   setMessageText: (text: string) => void;
-  onSendMessage: () => void;
+  onSendMessage: (content?: string, type?: string, audioData?: any) => void;
   onKeyPress: (e: React.KeyboardEvent) => void;
   onInputChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
   isLoading?: boolean;
@@ -36,8 +39,9 @@ export default function EnhancedChatInput({
   onInputChange,
   isLoading = false
 }: EnhancedChatInputProps) {
-  const [isRecording, setIsRecording] = useState(false);
+  const [showVoiceRecorder, setShowVoiceRecorder] = useState(false);
   const [showAttachments, setShowAttachments] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const handleEmojiSelect = useCallback((emoji: string) => {
@@ -54,17 +58,69 @@ export default function EnhancedChatInput({
         textarea.setSelectionRange(start + emoji.length, start + emoji.length);
       }, 0);
     }
+    setShowEmojiPicker(false);
   }, [messageText, setMessageText]);
 
-  const toggleRecording = () => {
-    setIsRecording(!isRecording);
-    // TODO: Implement voice recording functionality
+  const handleVoiceSend = async (audioBlob: Blob, duration: number) => {
+    try {
+      // Convert blob to base64 for transmission
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64data = reader.result as string;
+        onSendMessage(`🎙️ Voice message (${Math.floor(duration / 60)}:${(duration % 60).toString().padStart(2, '0')})`, 'voice', {
+          audio: base64data,
+          duration: duration
+        });
+      };
+      reader.readAsDataURL(audioBlob);
+    } catch (error) {
+      console.error('Error sending voice message:', error);
+    }
+    setShowVoiceRecorder(false);
   };
 
   const handleAttachmentClick = (type: string) => {
     setShowAttachments(false);
-    // TODO: Implement file attachment functionality
-    console.log(`Attachment type: ${type}`);
+    
+    const input = document.createElement('input');
+    input.type = 'file';
+    
+    switch (type) {
+      case 'image':
+        input.accept = 'image/*';
+        break;
+      case 'video':
+        input.accept = 'video/*';
+        break;
+      case 'audio':
+        input.accept = 'audio/*';
+        break;
+      case 'document':
+        input.accept = '.pdf,.doc,.docx,.txt,.xlsx,.pptx';
+        break;
+      default:
+        input.accept = '*';
+    }
+    
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) {
+        // Handle file upload
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const fileData = e.target?.result as string;
+          onSendMessage(`📎 ${file.name}`, 'file', {
+            fileName: file.name,
+            fileType: file.type,
+            fileData: fileData,
+            fileSize: file.size
+          });
+        };
+        reader.readAsDataURL(file);
+      }
+    };
+    
+    input.click();
   };
 
   // Auto-resize textarea
@@ -74,6 +130,17 @@ export default function EnhancedChatInput({
     textarea.style.height = `${Math.min(textarea.scrollHeight, 120)}px`;
     onInputChange(e);
   };
+
+  if (showVoiceRecorder) {
+    return (
+      <div className="bg-white border-t border-gray-200 p-4">
+        <VoiceRecorder 
+          onSendVoice={handleVoiceSend}
+          onCancel={() => setShowVoiceRecorder(false)}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 border-t border-white/10 bg-gradient-to-r from-white/50 to-white/30 backdrop-blur-sm">
@@ -160,17 +227,15 @@ export default function EnhancedChatInput({
         <Button
           variant="ghost"
           size="sm"
-          onClick={toggleRecording}
-          className={`h-10 w-10 p-0 rounded-xl floating-element transition-all duration-200 ${
-            isRecording ? 'bg-red-500 hover:bg-red-600 text-white' : 'hover:bg-white/20'
-          }`}
+          onClick={() => setShowVoiceRecorder(true)}
+          className="h-10 w-10 p-0 rounded-xl floating-element transition-all duration-200 hover:bg-red-500/20 text-red-600"
         >
-          <Mic className={`w-5 h-5 ${isRecording ? 'text-white' : 'text-gray-500'}`} />
+          <Mic className="w-5 h-5" />
         </Button>
 
         {/* Send Button */}
         <Button
-          onClick={onSendMessage}
+          onClick={() => onSendMessage(messageText)}
           disabled={!messageText.trim() || isLoading}
           className="h-10 w-10 p-0 rounded-xl modern-button floating-element"
         >
