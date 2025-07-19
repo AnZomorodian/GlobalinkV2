@@ -122,8 +122,9 @@ export function GroupManager({ isOpen, onClose, onGroupSelect, currentUser }: Gr
     );
   };
 
-  const filteredContacts = contacts.filter((contact: any) => {
-    const contactData = contact.contact || contact;
+  const filteredContacts = (contacts || []).filter((contact: any) => {
+    const contactData = contact?.contact || contact;
+    if (!contactData) return false;
     return (
       contactData.firstName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       contactData.lastName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -166,7 +167,7 @@ export function GroupManager({ isOpen, onClose, onGroupSelect, currentUser }: Gr
               className="data-[state=active]:bg-white/30 data-[state=active]:text-purple-700 font-medium"
             >
               <Users className="w-4 h-4 mr-2" />
-              My Groups ({groups.length})
+              My Groups ({groups?.length || 0})
             </TabsTrigger>
           </TabsList>
 
@@ -334,7 +335,7 @@ export function GroupManager({ isOpen, onClose, onGroupSelect, currentUser }: Gr
                     <p className="text-gray-600 text-sm">Loading groups...</p>
                   </div>
                 </div>
-              ) : groups.length === 0 ? (
+              ) : (groups?.length || 0) === 0 ? (
                 <div className="text-center py-16">
                   <div className="w-20 h-20 bg-gradient-to-br from-purple-200 to-blue-200 rounded-full mx-auto mb-6 flex items-center justify-center">
                     <Users2 className="w-10 h-10 text-purple-600" />
@@ -351,7 +352,7 @@ export function GroupManager({ isOpen, onClose, onGroupSelect, currentUser }: Gr
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {groups.map((group: Group) => (
+                  {(groups || []).map((group: Group) => (
                     <Card key={group.id} className="glass-card border-white/20 hover:bg-white/20 transition-all duration-200">
                       <CardContent className="p-4">
                         <div className="flex items-center justify-between">
@@ -370,7 +371,7 @@ export function GroupManager({ isOpen, onClose, onGroupSelect, currentUser }: Gr
                                   {group.type}
                                 </Badge>
                                 <span className="text-xs text-gray-500">
-                                  {group.members.length} members
+                                  {group.members?.length || 0} members
                                 </span>
                               </div>
                             </div>
