@@ -17,10 +17,6 @@ import { Reply, Copy, Paperclip, Send, Smile, Search, Phone, Video, Info, MoreHo
 import EnhancedChatInput from './EnhancedChatInput';
 import { VoiceMessagePlayer } from './VoiceMessagePlayer';
 import ModernMessageBubble from './ModernMessageBubble';
-import { TypingIndicator } from "./ui/typing-indicator";
-import { ConnectionStatus } from "./ui/connection-status";
-import { MessageStatus } from "./ui/message-status";
-import { useTypingIndicator } from "../hooks/useTypingIndicator";
 import GlobalinkLogo from "./GlobalinkLogo";
 import type { User, Message } from "@shared/schema";
 
@@ -30,10 +26,6 @@ interface ChatAreaProps {
   onContactInfoToggle: () => void;
   sendWsMessage: (message: any) => void;
   onCallStart: (callType: 'voice' | 'video') => void;
-  isConnected?: boolean;
-  connectionState?: 'connecting' | 'connected' | 'disconnected' | 'reconnecting';
-  lastError?: string | null;
-  onReconnect?: () => void;
 }
 
 export default function ChatArea({ 
@@ -41,11 +33,7 @@ export default function ChatArea({
   selectedContactId, 
   onContactInfoToggle, 
   sendWsMessage,
-  onCallStart,
-  isConnected = false,
-  connectionState = 'disconnected',
-  lastError,
-  onReconnect
+  onCallStart 
 }: ChatAreaProps) {
   const [messageInput, setMessageInput] = useState("");
   const [searchInput, setSearchInput] = useState("");
@@ -58,18 +46,6 @@ export default function ChatArea({
   const emojis = ["😀", "😂", "😊", "😍", "🤔", "😢", "😡", "👍", "👎", "❤️", "🎉", "🔥", "💯", "👏", "🙏", "🎊", "✨", "⚡", "🌟", "💫"];
   const messageInputRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // Typing indicator functionality
-  const { 
-    isTyping, 
-    otherUserTyping, 
-    startTyping, 
-    stopTyping, 
-    handleTypingMessage 
-  } = useTypingIndicator({
-    sendMessage: sendWsMessage,
-    targetUserId: selectedContactId || undefined,
-  });
 
   // Fetch contact details
   const { data: contacts = [] } = useQuery({
