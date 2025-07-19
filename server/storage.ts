@@ -474,6 +474,242 @@ export class DatabaseStorage implements IStorage {
       );
   }
 
+  async getGroupDetails(groupId: string, userId: string): Promise<any | null> {
+    // Check if user is a member of the group
+    const membership = await db
+      .select()
+      .from(groupMembers)
+      .where(and(
+        eq(groupMembers.groupId, parseInt(groupId)),
+        eq(groupMembers.userId, userId)
+      ))
+      .limit(1);
+
+    if (membership.length === 0) {
+      return null;
+    }
+
+    // Get group basic info
+    const group = await db
+      .select()
+      .from(groups)
+      .where(eq(groups.id, parseInt(groupId)))
+      .limit(1);
+
+    if (group.length === 0) {
+      return null;
+    }
+
+    // Get all members with user details
+    const members = await db
+      .select({
+        id: groupMembers.id,
+        userId: groupMembers.userId,
+        role: groupMembers.role,
+        joinedAt: groupMembers.joinedAt,
+        user: {
+          id: users.id,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          email: users.email,
+          profileImageUrl: users.profileImageUrl,
+          status: users.status,
+          jobTitle: users.jobTitle,
+          company: users.company,
+        },
+      })
+      .from(groupMembers)
+      .innerJoin(users, eq(groupMembers.userId, users.id))
+      .where(eq(groupMembers.groupId, parseInt(groupId)));
+
+    // Get message count for this group
+    const messageCount = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(groupMessages)
+      .where(eq(groupMessages.groupId, parseInt(groupId)));
+
+    return {
+      ...group[0],
+      memberCount: members.length,
+      messageCount: messageCount[0]?.count || 0,
+      members,
+    };
+  }
+
+  async updateGroup(groupId: string, userId: string, data: { name: string; description: string }): Promise<any | null> {
+    // Check if user is the group owner
+    const group = await db
+      .select()
+      .from(groups)
+      .where(and(
+        eq(groups.id, parseInt(groupId)),
+        eq(groups.createdById, userId)
+      ))
+      .limit(1);
+
+    if (group.length === 0) {
+      return null;
+    }
+
+    const [updatedGroup] = await db
+      .update(groups)
+      .set({
+        name: data.name,
+        description: data.description,
+      })
+      .where(eq(groups.id, parseInt(groupId)))
+      .returning();
+
+    return updatedGroup;
+  }
+
+  async addGroupMemberByEmail(groupId: string, adminUserId: string, email: string): Promise<any | null> {
+    // Check if requester is admin or owner
+    const adminCheck = await db
+      .select()
+      .from(groupMembers)
+      .innerJoin(groups, eq(groupMembers.groupId, groups.id))
+      .where(and(
+        eq(groupMembers.groupId, parseInt(groupId)),
+        eq(groupMembers.userId, adminUserId),
+        or(
+          eq(groupMembers.role, 'admin'),
+          eq(groups.createdById, adminUserId)
+        )
+      ))
+      .limit(1);
+
+    if (adminCheck.length === 0) {
+      return null;
+    }
+
+    // Find user by email
+    const user = await db
+      .select()
+      .from(users)
+      .where(eq(users.email, email))
+      .limit(1);
+
+    if (user.length === 0) {
+      return null;
+    }
+
+    // Check if user is already a member
+    const existingMember = await db
+      .select()
+      .from(groupMembers)
+      .where(and(
+        eq(groupMembers.groupId, parseInt(groupId)),
+        eq(groupMembers.userId, user[0].id)
+      ))
+      .limit(1);
+
+    if (existingMember.length > 0) {
+      return null;
+    }
+
+    // Add member
+    const [member] = await db
+      .insert(groupMembers)
+      .values({
+        groupId: parseInt(groupId),
+        userId: user[0].id,
+        role: 'member',
+        joinedAt: new Date(),
+      })
+      .returning();
+
+    return {
+      ...member,
+      user: user[0],
+    };
+  }
+
+  async removeGroupMemberByUserId(groupId: string, adminUserId: string, targetUserId: string): Promise<boolean> {
+    // Check if requester is admin or owner
+    const adminCheck = await db
+      .select()
+      .from(groupMembers)
+      .innerJoin(groups, eq(groupMembers.groupId, groups.id))
+      .where(and(
+        eq(groupMembers.groupId, parseInt(groupId)),
+        eq(groupMembers.userId, adminUserId),
+        or(
+          eq(groupMembers.role, 'admin'),
+          eq(groups.createdById, adminUserId)
+        )
+      ))
+      .limit(1);
+
+    if (adminCheck.length === 0) {
+      return false;
+    }
+
+    // Cannot remove the group owner
+    const group = await db
+      .select()
+      .from(groups)
+      .where(eq(groups.id, parseInt(groupId)))
+      .limit(1);
+
+    if (group.length > 0 && group[0].createdById === targetUserId) {
+      return false;
+    }
+
+    // Remove member
+    await db
+      .delete(groupMembers)
+      .where(and(
+        eq(groupMembers.groupId, parseInt(groupId)),
+        eq(groupMembers.userId, targetUserId)
+      ));
+
+    return true;
+  }
+
+  async updateGroupMemberRole(groupId: string, adminUserId: string, targetUserId: string, role: string): Promise<boolean> {
+    // Check if requester is admin or owner
+    const adminCheck = await db
+      .select()
+      .from(groupMembers)
+      .innerJoin(groups, eq(groupMembers.groupId, groups.id))
+      .where(and(
+        eq(groupMembers.groupId, parseInt(groupId)),
+        eq(groupMembers.userId, adminUserId),
+        or(
+          eq(groupMembers.role, 'admin'),
+          eq(groups.createdById, adminUserId)
+        )
+      ))
+      .limit(1);
+
+    if (adminCheck.length === 0) {
+      return false;
+    }
+
+    // Cannot change owner role
+    const group = await db
+      .select()
+      .from(groups)
+      .where(eq(groups.id, parseInt(groupId)))
+      .limit(1);
+
+    if (group.length > 0 && group[0].createdById === targetUserId) {
+      return false;
+    }
+
+    // Update member role
+    await db
+      .update(groupMembers)
+      .set({ role })
+      .where(and(
+        eq(groupMembers.groupId, parseInt(groupId)),
+        eq(groupMembers.userId, targetUserId)
+      ));
+
+    return true;
+  }
+
   async getGroupMembers(groupId: number): Promise<(GroupMember & { user: User })[]> {
     return await db
       .select({
