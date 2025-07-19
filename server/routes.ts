@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
-import { insertContactSchema, insertMessageSchema, insertCallSchema } from "@shared/schema";
+import { insertContactSchema, insertMessageSchema, insertCallSchema, insertGroupSchema, insertGroupMemberSchema, insertGroupMessageSchema } from "@shared/schema";
 import { z } from "zod";
 
 interface WebSocketClient extends WebSocket {
@@ -299,6 +299,132 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error updating call status:", error);
       res.status(500).json({ message: "Failed to update call status" });
+    }
+  });
+
+  // Group routes
+  app.post('/api/groups', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const groupData = insertGroupSchema.parse({
+        ...req.body,
+        createdById: userId,
+      });
+
+      const group = await storage.createGroup(groupData);
+      res.json(group);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid group data", errors: error.errors });
+      }
+      console.error("Error creating group:", error);
+      res.status(500).json({ message: "Failed to create group" });
+    }
+  });
+
+  app.get('/api/groups', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const groups = await storage.getGroups(userId);
+      res.json(groups);
+    } catch (error) {
+      console.error("Error fetching groups:", error);
+      res.status(500).json({ message: "Failed to fetch groups" });
+    }
+  });
+
+  app.post('/api/groups/:groupId/members', isAuthenticated, async (req: any, res) => {
+    try {
+      const { groupId } = req.params;
+      const { userId: memberUserId, role = 'member' } = req.body;
+      
+      const memberData = insertGroupMemberSchema.parse({
+        groupId: parseInt(groupId),
+        userId: memberUserId,
+        role,
+      });
+
+      const member = await storage.addGroupMember(memberData);
+      res.json(member);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid member data", errors: error.errors });
+      }
+      console.error("Error adding group member:", error);
+      res.status(500).json({ message: "Failed to add group member" });
+    }
+  });
+
+  app.get('/api/groups/:groupId/members', isAuthenticated, async (req: any, res) => {
+    try {
+      const { groupId } = req.params;
+      const members = await storage.getGroupMembers(parseInt(groupId));
+      res.json(members);
+    } catch (error) {
+      console.error("Error fetching group members:", error);
+      res.status(500).json({ message: "Failed to fetch group members" });
+    }
+  });
+
+  app.delete('/api/groups/:groupId/members/:userId', isAuthenticated, async (req: any, res) => {
+    try {
+      const { groupId, userId } = req.params;
+      await storage.removeGroupMember(parseInt(groupId), userId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error removing group member:", error);
+      res.status(500).json({ message: "Failed to remove group member" });
+    }
+  });
+
+  app.post('/api/groups/:groupId/messages', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { groupId } = req.params;
+      
+      const messageData = insertGroupMessageSchema.parse({
+        ...req.body,
+        groupId: parseInt(groupId),
+        senderId: userId,
+      });
+
+      const message = await storage.sendGroupMessage(messageData);
+      
+      // Broadcast to group members
+      const members = await storage.getGroupMembers(parseInt(groupId));
+      members.forEach(member => {
+        const memberSocket = connectedClients.get(member.userId);
+        if (memberSocket && memberSocket.readyState === WebSocket.OPEN && member.userId !== userId) {
+          memberSocket.send(JSON.stringify({
+            type: 'groupMessage',
+            message: { ...message, groupId: parseInt(groupId) },
+          }));
+        }
+      });
+      
+      res.json(message);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid message data", errors: error.errors });
+      }
+      console.error("Error sending group message:", error);
+      res.status(500).json({ message: "Failed to send group message" });
+    }
+  });
+
+  app.get('/api/groups/:groupId/messages', isAuthenticated, async (req: any, res) => {
+    try {
+      const { groupId } = req.params;
+      const { limit } = req.query;
+      
+      const messages = await storage.getGroupMessages(
+        parseInt(groupId), 
+        limit ? parseInt(limit as string) : undefined
+      );
+      res.json(messages);
+    } catch (error) {
+      console.error("Error fetching group messages:", error);
+      res.status(500).json({ message: "Failed to fetch group messages" });
     }
   });
 
