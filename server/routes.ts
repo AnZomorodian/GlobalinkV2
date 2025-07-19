@@ -334,84 +334,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Update group
-  app.put('/api/groups/:groupId', isAuthenticated, async (req: any, res) => {
-    try {
-      const { groupId } = req.params;
-      const { name, description } = req.body;
-      const userId = req.user.claims.sub;
-
-      if (!name?.trim()) {
-        return res.status(400).json({ message: "Group name is required" });
-      }
-
-      const updatedGroup = await storage.updateGroup(groupId, userId, {
-        name: name.trim(),
-        description: description?.trim() || ""
-      });
-
-      if (!updatedGroup) {
-        return res.status(404).json({ message: "Group not found or access denied" });
-      }
-
-      res.json(updatedGroup);
-    } catch (error) {
-      console.error("Error updating group:", error);
-      res.status(500).json({ message: "Failed to update group" });
-    }
-  });
-
   app.post('/api/groups/:groupId/members', isAuthenticated, async (req: any, res) => {
     try {
       const { groupId } = req.params;
-      const { email, userId: memberUserId, role = 'member' } = req.body;
-      const userId = req.user.claims.sub;
+      const { userId: memberUserId, role = 'member' } = req.body;
       
-      if (email) {
-        // Add member by email
-        const member = await storage.addGroupMemberByEmail(groupId, userId, email.trim());
-        
-        if (!member) {
-          return res.status(400).json({ message: "User not found or already a member" });
-        }
-        
-        res.json(member);
-      } else {
-        // Original functionality
-        const memberData = insertGroupMemberSchema.parse({
-          groupId: parseInt(groupId),
-          userId: memberUserId,
-          role,
-        });
+      const memberData = insertGroupMemberSchema.parse({
+        groupId: parseInt(groupId),
+        userId: memberUserId,
+        role,
+      });
 
-        const member = await storage.addGroupMember(memberData);
-        res.json(member);
-      }
+      const member = await storage.addGroupMember(memberData);
+      res.json(member);
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: "Invalid member data", errors: error.errors });
       }
       console.error("Error adding group member:", error);
       res.status(500).json({ message: "Failed to add group member" });
-    }
-  });
-
-  // Get group details with members
-  app.get('/api/groups/:groupId/details', isAuthenticated, async (req: any, res) => {
-    try {
-      const { groupId } = req.params;
-      const userId = req.user.claims.sub;
-      
-      const groupDetails = await storage.getGroupDetails(groupId, userId);
-      
-      if (!groupDetails) {
-        return res.status(404).json({ message: "Group not found or access denied" });
-      }
-      
-      res.json(groupDetails);
-    } catch (error) {
-      console.error("Error fetching group details:", error);
-      res.status(500).json({ message: "Failed to fetch group details" });
     }
   });
 
@@ -426,50 +367,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Remove member from group
   app.delete('/api/groups/:groupId/members/:userId', isAuthenticated, async (req: any, res) => {
-    try {
-      const { groupId, userId: targetUserId } = req.params;
-      const userId = req.user.claims.sub;
-
-      const success = await storage.removeGroupMemberByUserId(groupId, userId, targetUserId);
-      
-      if (!success) {
-        return res.status(400).json({ message: "Failed to remove member or access denied" });
-      }
-
-      res.json({ message: "Member removed successfully" });
-    } catch (error) {
-      console.error("Error removing group member:", error);
-      res.status(500).json({ message: "Failed to remove member" });
-    }
-  });
-
-  // Update member role
-  app.put('/api/groups/:groupId/members/:userId/role', isAuthenticated, async (req: any, res) => {
-    try {
-      const { groupId, userId: targetUserId } = req.params;
-      const { role } = req.body;
-      const userId = req.user.claims.sub;
-
-      if (!['admin', 'member'].includes(role)) {
-        return res.status(400).json({ message: "Invalid role" });
-      }
-
-      const success = await storage.updateGroupMemberRole(groupId, userId, targetUserId, role);
-      
-      if (!success) {
-        return res.status(400).json({ message: "Failed to update role or access denied" });
-      }
-
-      res.json({ message: "Role updated successfully" });
-    } catch (error) {
-      console.error("Error updating member role:", error);
-      res.status(500).json({ message: "Failed to update role" });
-    }
-  });
-
-  app.delete('/api/groups/:groupId/members/:userId/legacy', isAuthenticated, async (req: any, res) => {
     try {
       const { groupId, userId } = req.params;
       await storage.removeGroupMember(parseInt(groupId), userId);

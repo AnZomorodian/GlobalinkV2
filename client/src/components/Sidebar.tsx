@@ -11,31 +11,9 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { 
-  UserPlus, 
-  Settings, 
-  Search, 
-  LogOut, 
-  Plus, 
-  X, 
-  AlertCircle, 
-  MessageCircle, 
-  Users, 
-  MessageSquarePlus, 
-  Bell,
-  Hash,
-  Calendar,
-  TrendingUp,
-  Activity,
-  Zap,
-  Info
-} from "lucide-react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Separator } from "@/components/ui/separator";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { UserPlus, Settings, Search, LogOut, Plus, X, AlertCircle, MessageCircle, Users, MessageSquarePlus, Bell } from "lucide-react";
 import { ContactList } from "./ContactList";
 import { GroupManager } from "./GroupManager";
-import { GroupProfile } from "./GroupProfile";
 import { NotificationSettings } from "./NotificationSettings";
 import GlobalinkLogo from "./GlobalinkLogo";
 import type { User } from "@shared/schema";
@@ -54,9 +32,6 @@ export default function Sidebar({ currentUser, selectedContactId, onContactSelec
   const [showContactList, setShowContactList] = useState(false);
   const [showGroupManager, setShowGroupManager] = useState(false);
   const [showNotificationSettings, setShowNotificationSettings] = useState(false);
-  const [showGroupProfile, setShowGroupProfile] = useState(false);
-  const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState('chats');
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -90,12 +65,6 @@ export default function Sidebar({ currentUser, selectedContactId, onContactSelec
   // Get discoverable users for enhanced add contact
   const { data: discoverableUsers = [], isLoading: discoverableLoading } = useQuery({
     queryKey: ["/api/users/discoverable"],
-    retry: false,
-  });
-
-  // Fetch groups
-  const { data: groups = [], isLoading: groupsLoading } = useQuery({
-    queryKey: ["/api/groups"],
     retry: false,
   });
 
@@ -178,11 +147,6 @@ export default function Sidebar({ currentUser, selectedContactId, onContactSelec
       hour: '2-digit',
       minute: '2-digit',
     }).format(new Date(date));
-  };
-
-  const handleGroupSelect = (groupId: string) => {
-    setSelectedGroupId(groupId);
-    setShowGroupProfile(true);
   };
 
   return (
@@ -512,272 +476,11 @@ export default function Sidebar({ currentUser, selectedContactId, onContactSelec
 
 
 
-      {/* Tabbed Content Area */}
-      <div className="flex-1 overflow-hidden">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
-          <TabsList className="mx-4 mt-4 mb-2 grid w-auto grid-cols-3 bg-white/10 backdrop-blur-sm h-10">
-            <TabsTrigger value="chats" className="data-[state=active]:bg-white/20 text-xs flex items-center space-x-1">
-              <MessageCircle className="w-3 h-3" />
-              <span>Chats</span>
-            </TabsTrigger>
-            <TabsTrigger value="groups" className="data-[state=active]:bg-white/20 text-xs flex items-center space-x-1">
-              <Users className="w-3 h-3" />
-              <span>Groups</span>
-            </TabsTrigger>
-            <TabsTrigger value="activity" className="data-[state=active]:bg-white/20 text-xs flex items-center space-x-1">
-              <Activity className="w-3 h-3" />
-              <span>Activity</span>
-            </TabsTrigger>
-          </TabsList>
-
-          <div className="flex-1 overflow-hidden">
-            <TabsContent value="chats" className="h-full mt-0">
-              <div className="h-full flex flex-col">
-                <div className="px-4 py-2">
-                  <h3 className="text-xs font-medium text-gray-400 uppercase tracking-wider">Recent Chats</h3>
-                </div>
-                <ScrollArea className="flex-1">
-                  {chatsLoading ? (
-                    <div className="px-4 py-8 text-center">
-                      <div className="animate-pulse-soft">
-                        <div className="w-8 h-8 bg-gradient-to-br from-purple-600 to-blue-600 rounded-full mx-auto mb-3"></div>
-                        <p className="text-gray-500">Loading chats...</p>
-                      </div>
-                    </div>
-                  ) : recentChats.length === 0 ? (
-                    <div className="px-4 py-8 text-center">
-                      <div className="w-12 h-12 bg-gradient-to-br from-gray-200 to-gray-300 rounded-full mx-auto mb-3 flex items-center justify-center">
-                        <MessageCircle className="w-6 h-6 text-gray-500" />
-                      </div>
-                      <p className="text-gray-500 text-sm">No recent chats</p>
-                      <p className="text-gray-400 text-xs mt-1">Start a new conversation</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-1 px-2">
-                      {recentChats.map((chat: any) => (
-                        <div
-                          key={chat.id}
-                          onClick={() => onContactSelect(chat.id)}
-                          className={`px-4 py-4 hover:bg-white/50 cursor-pointer rounded-xl transition-all duration-200 animate-fade-in ${
-                            selectedContactId === chat.id ? 
-                              'bg-gradient-to-r from-purple-100 to-blue-100 shadow-lg border border-purple-200' : 
-                              'hover:shadow-md'
-                          }`}
-                        >
-                          <div className="flex items-center space-x-3">
-                            <div className="relative">
-                              <Avatar className="w-12 h-12 ring-2 ring-white/50 shadow-sm">
-                                <AvatarImage src={chat.profileImageUrl || ""} />
-                                <AvatarFallback className="bg-gradient-to-br from-purple-600 to-blue-600 text-white">
-                                  {chat.firstName?.[0]}{chat.lastName?.[0]}
-                                </AvatarFallback>
-                              </Avatar>
-                              <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white ${
-                                chat.status === 'online' ? 'status-online' :
-                                chat.status === 'away' ? 'status-away' :
-                                chat.status === 'busy' ? 'status-busy' : 'status-offline'
-                              }`}></div>
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center justify-between">
-                                <p className="text-sm font-semibold text-gray-900 truncate">
-                                  {chat.firstName} {chat.lastName}
-                                </p>
-                                {chat.lastMessage && (
-                                  <span className="text-xs text-gray-400 font-medium">
-                                    {formatTime(chat.lastMessage.createdAt)}
-                                  </span>
-                                )}
-                              </div>
-                              {chat.lastMessage && (
-                                <p className="text-xs text-gray-500 truncate mt-1">
-                                  {chat.lastMessage.content}
-                                </p>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </ScrollArea>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="groups" className="h-full mt-0">
-              <div className="h-full flex flex-col">
-                <div className="px-4 py-2 flex items-center justify-between">
-                  <h3 className="text-xs font-medium text-gray-400 uppercase tracking-wider">Groups</h3>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => setShowGroupManager(true)}
-                    className="h-6 w-6 p-0 hover:bg-white/20"
-                  >
-                    <Plus className="w-3 h-3" />
-                  </Button>
-                </div>
-                <ScrollArea className="flex-1">
-                  {groupsLoading ? (
-                    <div className="px-4 py-8 text-center">
-                      <div className="animate-pulse-soft">
-                        <div className="w-8 h-8 bg-gradient-to-br from-purple-600 to-blue-600 rounded-full mx-auto mb-3"></div>
-                        <p className="text-gray-500 text-sm">Loading groups...</p>
-                      </div>
-                    </div>
-                  ) : (groups || []).length === 0 ? (
-                    <div className="px-4 py-8 text-center">
-                      <div className="w-12 h-12 bg-gradient-to-br from-purple-200 to-blue-200 rounded-full mx-auto mb-3 flex items-center justify-center">
-                        <Users className="w-6 h-6 text-purple-600" />
-                      </div>
-                      <p className="text-gray-500 text-sm">No groups yet</p>
-                      <p className="text-gray-400 text-xs mt-1">Create or join a group</p>
-                      <Button
-                        size="sm"
-                        onClick={() => setShowGroupManager(true)}
-                        className="mt-3 h-8 bg-gradient-to-r from-purple-500 to-blue-500"
-                      >
-                        <Plus className="w-3 h-3 mr-2" />
-                        Create Group
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="space-y-1 px-2">
-                      {(groups || []).map((group: any) => (
-                        <div
-                          key={group.id}
-                          onClick={() => handleGroupSelect(group.id)}
-                          className="px-4 py-3 hover:bg-white/50 cursor-pointer rounded-xl transition-all duration-200"
-                        >
-                          <div className="flex items-center space-x-3">
-                            <div className="relative">
-                              <Avatar className="w-10 h-10 ring-2 ring-white/50 shadow-sm">
-                                <AvatarImage src={group.avatar} />
-                                <AvatarFallback className="bg-gradient-to-br from-purple-600 to-blue-600 text-white text-sm">
-                                  {group.name?.charAt(0)?.toUpperCase()}
-                                </AvatarFallback>
-                              </Avatar>
-                              <div className="absolute -bottom-1 -right-1 p-0.5 bg-white rounded-full">
-                                <Hash className="w-2 h-2 text-purple-600" />
-                              </div>
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center justify-between">
-                                <p className="text-sm font-semibold text-gray-900 truncate">
-                                  {group.name}
-                                </p>
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleGroupSelect(group.id);
-                                  }}
-                                  className="h-6 w-6 p-0 hover:bg-white/20"
-                                >
-                                  <Info className="w-3 h-3" />
-                                </Button>
-                              </div>
-                              <div className="flex items-center space-x-2 mt-1">
-                                <Badge variant="outline" className="text-xs bg-white/20">
-                                  {group.members?.length || 0} members
-                                </Badge>
-                                <span className="text-xs text-gray-400 truncate">
-                                  {group.description}
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </ScrollArea>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="activity" className="h-full mt-0">
-              <div className="h-full flex flex-col">
-                <div className="px-4 py-2">
-                  <h3 className="text-xs font-medium text-gray-400 uppercase tracking-wider">Activity Feed</h3>
-                </div>
-                <ScrollArea className="flex-1">
-                  <div className="px-4 py-4 space-y-4">
-                    <div className="glass-card p-4 rounded-xl border border-white/20">
-                      <div className="flex items-center space-x-3 mb-3">
-                        <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-blue-500 rounded-full flex items-center justify-center">
-                          <TrendingUp className="w-4 h-4 text-white" />
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium text-gray-900">System Status</p>
-                          <p className="text-xs text-gray-500">All systems operational</p>
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-2 gap-4 text-center">
-                        <div>
-                          <div className="text-lg font-bold gradient-text">{recentChats.length}</div>
-                          <div className="text-xs text-gray-500">Active Chats</div>
-                        </div>
-                        <div>
-                          <div className="text-lg font-bold gradient-text">{(groups || []).length}</div>
-                          <div className="text-xs text-gray-500">Groups</div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="glass-card p-4 rounded-xl border border-white/20">
-                      <div className="flex items-center space-x-3 mb-3">
-                        <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-                          <Zap className="w-4 h-4 text-white" />
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium text-gray-900">Quick Actions</p>
-                          <p className="text-xs text-gray-500">Frequently used features</p>
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-2 gap-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => setShowAddContact(true)}
-                          className="bg-white/10 border-white/20 text-xs"
-                        >
-                          <UserPlus className="w-3 h-3 mr-1" />
-                          Add Contact
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => setShowGroupManager(true)}
-                          className="bg-white/10 border-white/20 text-xs"
-                        >
-                          <Plus className="w-3 h-3 mr-1" />
-                          New Group
-                        </Button>
-                      </div>
-                    </div>
-
-                    <div className="glass-card p-4 rounded-xl border border-white/20">
-                      <div className="flex items-center space-x-3 mb-3">
-                        <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center">
-                          <Calendar className="w-4 h-4 text-white" />
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium text-gray-900">Recent Activity</p>
-                          <p className="text-xs text-gray-500">Last 24 hours</p>
-                        </div>
-                      </div>
-                      <div className="text-center text-gray-500 text-xs py-4">
-                        No recent activity to display
-                      </div>
-                    </div>
-                  </div>
-                </ScrollArea>
-              </div>
-            </TabsContent>
-          </div>
-        </Tabs>
-      </div>
+      {/* Contact List */}
+      <div className="flex-1 overflow-y-auto custom-scrollbar">
+        <div className="px-4 py-3">
+          <h3 className="text-xs font-medium text-gray-400 uppercase tracking-wider">Recent Chats</h3>
+        </div>
         
         {chatsLoading ? (
           <div className="px-4 py-8 text-center">
@@ -841,6 +544,7 @@ export default function Sidebar({ currentUser, selectedContactId, onContactSelec
             ))}
           </div>
         )}
+      </div>
 
       {/* Contact List Dialog */}
       <ContactList
@@ -854,31 +558,14 @@ export default function Sidebar({ currentUser, selectedContactId, onContactSelec
       <GroupManager
         isOpen={showGroupManager}
         onClose={() => setShowGroupManager(false)}
-        onGroupSelect={(groupId) => {
-          handleGroupSelect(groupId);
-          setShowGroupManager(false);
-        }}
+        onGroupSelect={onContactSelect}
         currentUser={currentUser}
       />
-
-      {/* Group Profile Dialog */}
-      {showGroupProfile && selectedGroupId && (
-        <GroupProfile
-          groupId={selectedGroupId}
-          isOpen={showGroupProfile}
-          onClose={() => {
-            setShowGroupProfile(false);
-            setSelectedGroupId(null);
-          }}
-          currentUser={currentUser}
-        />
-      )}
 
       {/* Notification Settings Dialog */}
       <NotificationSettings
         isOpen={showNotificationSettings}
         onClose={() => setShowNotificationSettings(false)}
-        currentUser={currentUser}
       />
     </div>
   );
