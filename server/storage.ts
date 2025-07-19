@@ -176,7 +176,7 @@ export class DatabaseStorage implements IStorage {
     return newMessage;
   }
 
-  async getMessages(userId: string, contactId: string, limit = 50): Promise<(Message & { sender: User, receiver: User, replyTo?: Message & { sender: User } })[]> {
+  async getMessages(userId: string, contactId: string, limit = 50): Promise<(Message & { sender: User, receiver: User })[]> {
     const messageList = await db
       .select({
         id: messages.id,
@@ -201,35 +201,20 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(messages.createdAt))
       .limit(limit);
 
-    // Get sender, receiver, and reply details for each message
+    // Get sender and receiver details for each message
     const enrichedMessages = await Promise.all(
       messageList.map(async (message) => {
         const [sender] = await db.select().from(users).where(eq(users.id, message.senderId));
         const [receiver] = await db.select().from(users).where(eq(users.id, message.receiverId));
-        
-        let replyTo = null;
-        if (message.replyToId) {
-          const [replyMessage] = await db.select().from(messages).where(eq(messages.id, message.replyToId));
-          if (replyMessage) {
-            const [replySender] = await db.select().from(users).where(eq(users.id, replyMessage.senderId));
-            replyTo = {
-              ...replyMessage,
-              sender: replySender,
-              senderName: replySender ? `${replySender.firstName || ''} ${replySender.lastName || ''}`.trim() || replySender.email : 'Unknown User'
-            };
-          }
-        }
-        
         return {
           ...message,
           sender: sender || null,
           receiver: receiver || null,
-          replyTo
         };
       })
     );
 
-    return enrichedMessages.filter(msg => msg.sender && msg.receiver) as (Message & { sender: User, receiver: User, replyTo?: Message & { sender: User } })[];
+    return enrichedMessages.filter(msg => msg.sender && msg.receiver) as (Message & { sender: User, receiver: User })[];
   }
 
   async markMessageAsRead(messageId: number): Promise<void> {

@@ -162,14 +162,10 @@ The application follows a monorepo structure with shared TypeScript types, makin
 - **✓ Modern Contact Actions**: Added clean button layout with glass-morphism effects and proper hover states
 - **✓ Performance Optimization**: Enhanced voice message encoding with WAV compression for better transmission
 
-### January 2025 - Migration, Enhancements & Legal Compliance Complete
+### January 2025 - Migration & Logo Integration
 - **✓ Successful Migration**: Migrated project from Replit Agent to Replit environment
 - **✓ Database Setup**: Created PostgreSQL database and pushed schema successfully
 - **✓ Configuration Fix**: Resolved all dependency and environment configuration issues
-- **✓ Reply Message Fix**: Fixed message reply functionality by fetching complete reply data with sender information
-- **✓ Legal & Compliance Pages**: Added comprehensive Terms of Service and Privacy Policy pages
-- **✓ Group Database Schema**: Created complete database schema for groups, group members, and group messages
-- **✓ Legal Page Integration**: Added routing and navigation links from settings modal to legal pages
 - **✓ Globalink Logo Integration**: Added official Globalink logo to sidebar and welcome screen
 - **✓ Contact Info Fix**: Fixed "Contact not found!" issue by implementing fallback user lookup
 - **✓ UI Improvements**: Enhanced welcome screen with proper logo display and professional branding

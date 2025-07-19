@@ -985,23 +985,13 @@ export default function SettingsModal({ user, onClose }: SettingsModalProps) {
                       <div className="text-sm text-black space-y-2">
                         <div className="flex items-center justify-between">
                           <span>Terms of Service</span>
-                          <Button 
-                            variant="link" 
-                            size="sm" 
-                            className="h-auto p-0 text-blue-600"
-                            onClick={() => window.open('/legal', '_blank')}
-                          >
+                          <Button variant="link" size="sm" className="h-auto p-0 text-blue-600">
                             View
                           </Button>
                         </div>
                         <div className="flex items-center justify-between">
                           <span>Privacy Policy</span>
-                          <Button 
-                            variant="link" 
-                            size="sm" 
-                            className="h-auto p-0 text-blue-600"
-                            onClick={() => window.open('/legal', '_blank')}
-                          >
+                          <Button variant="link" size="sm" className="h-auto p-0 text-blue-600">
                             View
                           </Button>
                         </div>
