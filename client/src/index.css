@@ -273,6 +273,27 @@
   background: linear-gradient(135deg, #6b7280, #4b5563);
 }
 
+/* Enhanced Animation classes */
+.animate-pulse-soft {
+  animation: pulseSoft 2s ease-in-out infinite;
+}
+
+@keyframes pulseSoft {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(0.98); }
+}
+
+/* Performance indicators */
+.performance-good { @apply text-green-500 bg-green-50; }
+.performance-warning { @apply text-yellow-600 bg-yellow-50; }
+.performance-critical { @apply text-red-500 bg-red-50; }
+
+/* Connection status indicators */
+.status-connecting { @apply text-yellow-500; }
+.status-connected { @apply text-green-500; }
+.status-disconnected { @apply text-red-500; }
+.status-reconnecting { @apply text-orange-500; }
+
 /* Animation utilities */
 .animate-pulse-soft {
   animation: pulse-soft 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;

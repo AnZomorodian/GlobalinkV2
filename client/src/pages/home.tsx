@@ -19,8 +19,15 @@ export default function Home() {
   const [showSettings, setShowSettings] = useState(false);
   const [activeCall, setActiveCall] = useState<any>(null);
 
-  // WebSocket connection
-  const { sendMessage: sendWsMessage, lastMessage } = useWebSocket(user?.id);
+  // WebSocket connection with enhanced features
+  const { 
+    isConnected, 
+    connectionState, 
+    lastMessage, 
+    lastError, 
+    sendMessage: sendWsMessage, 
+    forceReconnect 
+  } = useWebSocket(user?.id);
 
   // Handle incoming WebSocket messages
   useEffect(() => {
@@ -141,9 +148,16 @@ export default function Home() {
           onContactInfoToggle={() => setShowContactInfo(!showContactInfo)}
           sendWsMessage={sendWsMessage}
           onCallStart={(callType) => {
-            // Handle call initiation
-            console.log('Starting call:', callType);
+            setActiveCall({
+              type: callType,
+              contactId: selectedContactId,
+              isInitiator: true,
+            });
           }}
+          isConnected={isConnected}
+          connectionState={connectionState}
+          lastError={lastError}
+          onReconnect={forceReconnect}
         />
         
         {showContactInfo && selectedContactId && (

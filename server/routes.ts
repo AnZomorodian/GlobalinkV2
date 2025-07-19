@@ -8,6 +8,7 @@ import { z } from "zod";
 
 interface WebSocketClient extends WebSocket {
   userId?: string;
+  isAlive?: boolean;
 }
 
 const connectedClients = new Map<string, WebSocketClient>();
@@ -433,68 +434,201 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // WebSocket server setup
   const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
 
+  // Enhanced WebSocket with heartbeat and error handling
   wss.on('connection', (ws: WebSocketClient, req) => {
-    console.log('WebSocket client connected');
+    console.log(`WebSocket client connected from ${req.socket.remoteAddress}`);
+    
+    // Set up heartbeat
+    ws.isAlive = true;
+    ws.on('pong', () => {
+      ws.isAlive = true;
+    });
+
+    // Send connection confirmation
+    ws.send(JSON.stringify({
+      type: 'connected',
+      timestamp: Date.now(),
+    }));
 
     ws.on('message', async (data) => {
       try {
         const message = JSON.parse(data.toString());
         
+        // Validate message structure
+        if (!message.type) {
+          ws.send(JSON.stringify({
+            type: 'error',
+            message: 'Invalid message format: missing type',
+          }));
+          return;
+        }
+        
         switch (message.type) {
+          case 'ping':
+            // Respond to ping with pong
+            ws.send(JSON.stringify({
+              type: 'pong',
+              timestamp: Date.now(),
+            }));
+            break;
+
           case 'authenticate':
+            if (!message.userId) {
+              ws.send(JSON.stringify({
+                type: 'error',
+                message: 'Authentication failed: missing userId',
+              }));
+              return;
+            }
+            
             ws.userId = message.userId;
             connectedClients.set(message.userId, ws);
-            await storage.updateUserStatus(message.userId, 'online');
             
-            // Broadcast status update
-            connectedClients.forEach((client, clientId) => {
-              if (client.readyState === WebSocket.OPEN && clientId !== message.userId) {
-                client.send(JSON.stringify({
-                  type: 'statusUpdate',
-                  userId: message.userId,
-                  status: 'online',
+            try {
+              await storage.updateUserStatus(message.userId, 'online');
+              
+              // Send authentication success
+              ws.send(JSON.stringify({
+                type: 'authenticated',
+                userId: message.userId,
+                timestamp: Date.now(),
+              }));
+              
+              // Broadcast status update to other clients
+              const statusUpdate = {
+                type: 'statusUpdate',
+                userId: message.userId,
+                status: 'online',
+                timestamp: Date.now(),
+              };
+              
+              connectedClients.forEach((client, clientId) => {
+                if (client.readyState === WebSocket.OPEN && clientId !== message.userId) {
+                  client.send(JSON.stringify(statusUpdate));
+                }
+              });
+            } catch (error) {
+              console.error('Authentication error:', error);
+              ws.send(JSON.stringify({
+                type: 'error',
+                message: 'Authentication failed',
+              }));
+            }
+            break;
+
+          case 'typing':
+            // Forward typing indicators
+            if (message.targetUserId && ws.userId) {
+              const targetSocket = connectedClients.get(message.targetUserId);
+              if (targetSocket && targetSocket.readyState === WebSocket.OPEN) {
+                targetSocket.send(JSON.stringify({
+                  type: 'typing',
+                  fromUserId: ws.userId,
+                  isTyping: message.isTyping,
+                  timestamp: Date.now(),
                 }));
               }
-            });
+            }
             break;
 
           case 'webrtc-offer':
           case 'webrtc-answer':
           case 'webrtc-ice-candidate':
           case 'webrtc-end-call':
-            // Forward WebRTC signaling messages
+            // Forward WebRTC signaling messages with enhanced error handling
+            if (!message.targetUserId) {
+              ws.send(JSON.stringify({
+                type: 'error',
+                message: 'WebRTC message missing targetUserId',
+              }));
+              return;
+            }
+            
             const targetSocket = connectedClients.get(message.targetUserId);
             if (targetSocket && targetSocket.readyState === WebSocket.OPEN) {
               targetSocket.send(JSON.stringify({
                 ...message,
                 fromUserId: ws.userId,
+                timestamp: Date.now(),
+              }));
+            } else {
+              ws.send(JSON.stringify({
+                type: 'error',
+                message: 'Target user not connected',
               }));
             }
             break;
+
+          default:
+            ws.send(JSON.stringify({
+              type: 'error',
+              message: `Unknown message type: ${message.type}`,
+            }));
         }
       } catch (error) {
-        console.error('WebSocket message error:', error);
+        console.error('WebSocket message parsing error:', error);
+        ws.send(JSON.stringify({
+          type: 'error',
+          message: 'Invalid message format',
+        }));
       }
     });
 
-    ws.on('close', async () => {
-      console.log('WebSocket client disconnected');
+    ws.on('close', async (code, reason) => {
+      console.log(`WebSocket client disconnected: ${code} - ${reason}`);
       if (ws.userId) {
         connectedClients.delete(ws.userId);
-        await storage.updateUserStatus(ws.userId, 'offline');
         
-        // Broadcast status update
-        connectedClients.forEach((client, clientId) => {
-          if (client.readyState === WebSocket.OPEN) {
-            client.send(JSON.stringify({
-              type: 'statusUpdate',
-              userId: ws.userId,
-              status: 'offline',
-            }));
-          }
-        });
+        try {
+          await storage.updateUserStatus(ws.userId, 'offline');
+          
+          // Broadcast status update
+          const statusUpdate = {
+            type: 'statusUpdate',
+            userId: ws.userId,
+            status: 'offline',
+            timestamp: Date.now(),
+          };
+          
+          connectedClients.forEach((client, clientId) => {
+            if (client.readyState === WebSocket.OPEN) {
+              try {
+                client.send(JSON.stringify(statusUpdate));
+              } catch (error) {
+                console.error('Error broadcasting status update:', error);
+              }
+            }
+          });
+        } catch (error) {
+          console.error('Error updating user status on disconnect:', error);
+        }
       }
     });
+
+    ws.on('error', (error) => {
+      console.error('WebSocket error:', error);
+      if (ws.userId) {
+        connectedClients.delete(ws.userId);
+      }
+    });
+  });
+
+  // Heartbeat interval to detect broken connections
+  const heartbeat = setInterval(() => {
+    wss.clients.forEach((ws: WebSocketClient) => {
+      if (ws.isAlive === false) {
+        console.log('Terminating dead WebSocket connection');
+        return ws.terminate();
+      }
+      
+      ws.isAlive = false;
+      ws.ping();
+    });
+  }, 30000); // 30 seconds
+
+  // Cleanup heartbeat on server close
+  wss.on('close', () => {
+    clearInterval(heartbeat);
   });
 
   return httpServer;
