@@ -349,14 +349,11 @@ export default function ChatArea({
                     </Avatar>
                   )}
                   <div className={`max-w-xs lg:max-w-md ${isOwn ? 'order-first' : ''}`}>
-                    {message.replyTo && (
+                    {message.replyToId && (
                       <div className="mb-2 opacity-75">
                         <div className="text-xs text-gray-500 border-l-2 border-corp-blue pl-2 bg-gray-50 rounded p-2">
                           <Reply className="w-3 h-3 inline mr-1" />
-                          <div>
-                            <p className="font-medium">{message.replyTo.senderName}</p>
-                            <p className="truncate">{message.replyTo.content}</p>
-                          </div>
+                          Replying to message
                         </div>
                       </div>
                     )}

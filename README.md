@@ -39,13 +39,12 @@ A modern, full-stack corporate messaging application built with React, Express.j
 
 ### Required Environment Variables
 
-| Variable | Description | Location | Example |
-|----------|-------------|----------|---------|
-| `DATABASE_URL` | PostgreSQL connection string | Provided by Replit | `postgres://user:pass@host:port/db` |
-| `REPL_ID` | Replit project ID | Provided by Replit | `your-repl-id-123` |
-| `REPLIT_DOMAINS` | Replit domains | Provided by Replit | `your-repl.replit.app` |
-| `NODE_ENV` | Environment mode | Manual | `development` or `production` |
-| `SESSION_SECRET` | Session encryption key | Manual/Generated | Auto-generated if not set |
+| Variable | Description | Location |
+|----------|-------------|----------|
+| `DATABASE_URL` | PostgreSQL connection string | Provided by Replit |
+| `REPL_ID` | Replit project ID | Provided by Replit |
+| `REPLIT_DOMAINS` | Replit domains | Provided by Replit |
+| `NODE_ENV` | Environment mode | Set to `development` or `production` |
 
 ### Finding Your REPL_ID
 
@@ -224,39 +223,29 @@ createdb globalink
 
 ### Getting Started
 
-1. **Sign in** with your Replit account - authentication is automatic
-2. **Complete your profile** with name, job title, and company details
-3. **Get your Zin code** from settings - this is your unique team identifier
-4. **Add contacts** using the sidebar or discover new team members
-5. **Start conversations** by selecting contacts or creating groups
-6. **Send messages** including text, voice recordings, and files
+1. **Sign in** with your Replit account
+2. **Set up profile** with your name and details
+3. **Get your Zin code** from settings for team identification
+4. **Discover contacts** in the sidebar
+5. **Start messaging** by selecting a contact
 
 ### Key Features
 
-#### 👥 Contact Management
-- **Smart Discovery**: Automatically find team members by Zin codes
-- **Direct Search**: Add contacts by user ID with instant verification
-- **Rich Profiles**: View job titles, companies, locations, and status
-- **Team Organization**: Organize contacts by department or project
+#### Contact Management
+- **Add contacts** by user ID or discover automatically
+- **Zin codes** for team identification
+- **Contact details** with job title, company, location
 
-#### 💬 Advanced Messaging
-- **Real-time Chat**: Instant message delivery with WebSocket technology
-- **Reply System**: Quote and reply to specific messages in conversations
-- **Voice Messages**: Compressed audio with one-tap recording and playback
-- **File Sharing**: Send images, documents, and attachments up to 50MB
-- **Message Search**: Find conversations quickly with built-in search
+#### Messaging
+- **Text messages** with emoji support
+- **Voice messages** with compression
+- **File sharing** for documents and images
+- **Real-time delivery** with read receipts
 
-#### 📞 Communication Tools
-- **Voice Calls**: High-quality WebRTC audio calls
-- **Video Calls**: Face-to-face meetings with camera support
-- **Call History**: Track all communication with detailed logs
-- **Group Calls**: Multi-participant voice/video conferences
-
-#### 🏢 Team Collaboration
-- **Group Messaging**: Create public/private groups for projects
-- **Team Discovery**: Auto-discover colleagues through Zin codes
-- **Status Management**: Share availability (online, away, busy, offline)
-- **Notification Control**: Customize alerts and quiet hours
+#### Calls
+- **Voice calls** with WebRTC
+- **Video calls** with camera support
+- **Call history** tracking
 
 ## 🔧 Development
 
@@ -304,31 +293,22 @@ npm run lint         # ESLint code linting
 4. **Build UI components** in `client/src/components/`
 5. **Update types** and run `npm run db:push`
 
-## ⚡ Performance & Features
+## 🚀 Performance Optimization
 
-### Audio Optimization
-- **Advanced Compression**: 16kHz sample rate with WAV encoding
-- **Smart Recording**: Automatic noise reduction and volume normalization
-- **Instant Playback**: Pre-buffered audio for immediate voice message play
-- **File Size Reduction**: Up to 80% smaller voice message files
+### Audio Compression
+- **16kHz sample rate** for voice messages
+- **WAV compression** for smaller payloads
+- **Advanced encoding** for better quality
 
-### Caching & Speed
-- **Intelligent Caching**: TanStack Query for lightning-fast data loading
-- **Browser Optimization**: Smart static asset caching for faster loads
-- **Session Persistence**: Seamless reconnection without data loss
-- **Lazy Loading**: Load conversations and media only when needed
+### Caching
+- **TanStack Query** for server state caching
+- **Browser caching** for static assets
+- **Session storage** for user preferences
 
-### Real-time Experience
-- **WebSocket Technology**: Sub-100ms message delivery
-- **Live Status Updates**: Instant typing indicators and status changes
-- **Auto-reconnection**: Seamless recovery from connection drops
-- **Offline Support**: Queue messages when offline, sync when back online
-
-### Modern UI/UX
-- **Glass-morphism Design**: Beautiful transparent effects with backdrop blur
-- **Responsive Layout**: Perfect on desktop, tablet, and mobile devices
-- **Dark/Light Mode**: Automatic theme switching based on system preference
-- **Accessibility**: Full keyboard navigation and screen reader support
+### Real-time Updates
+- **WebSocket connections** for live messaging
+- **Efficient broadcasting** to connected users
+- **Automatic reconnection** on connection loss
 
 ## 🔒 Security
 

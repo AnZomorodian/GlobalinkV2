@@ -3,9 +3,6 @@ import {
   contacts,
   messages,
   calls,
-  groups,
-  groupMembers,
-  groupMessages,
   type User,
   type UpsertUser,
   type InsertContact,
@@ -14,12 +11,6 @@ import {
   type Message,
   type InsertCall,
   type Call,
-  type InsertGroup,
-  type Group,
-  type InsertGroupMember,
-  type GroupMember,
-  type InsertGroupMessage,
-  type GroupMessage,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, or, desc, asc, like, not } from "drizzle-orm";
@@ -53,15 +44,6 @@ export interface IStorage {
   createCall(call: InsertCall): Promise<Call>;
   updateCallStatus(callId: number, status: string, duration?: number): Promise<void>;
   getCallHistory(userId: string): Promise<(Call & { caller: User, receiver: User })[]>;
-  
-  // Group operations
-  createGroup(group: InsertGroup): Promise<Group>;
-  getGroups(userId: string): Promise<(Group & { memberCount: number, creator: User })[]>;
-  addGroupMember(member: InsertGroupMember): Promise<GroupMember>;
-  removeGroupMember(groupId: number, userId: string): Promise<void>;
-  getGroupMembers(groupId: number): Promise<(GroupMember & { user: User })[]>;
-  sendGroupMessage(message: InsertGroupMessage): Promise<GroupMessage>;
-  getGroupMessages(groupId: number, limit?: number): Promise<(GroupMessage & { sender: User })[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -397,125 +379,6 @@ export class DatabaseStorage implements IStorage {
       )
       .orderBy(desc(calls.createdAt))
       .limit(50);
-  }
-
-  // Group operations
-  async createGroup(group: InsertGroup): Promise<Group> {
-    const [newGroup] = await db
-      .insert(groups)
-      .values(group)
-      .returning();
-    
-    // Add the creator as an admin member
-    await db
-      .insert(groupMembers)
-      .values({
-        groupId: newGroup.id,
-        userId: group.createdById,
-        role: 'admin'
-      });
-    
-    return newGroup;
-  }
-
-  async getGroups(userId: string): Promise<(Group & { memberCount: number, creator: User })[]> {
-    const userGroups = await db
-      .select({
-        id: groups.id,
-        name: groups.name,
-        description: groups.description,
-        createdById: groups.createdById,
-        isPrivate: groups.isPrivate,
-        maxMembers: groups.maxMembers,
-        createdAt: groups.createdAt,
-        updatedAt: groups.updatedAt,
-        creator: users,
-      })
-      .from(groups)
-      .innerJoin(groupMembers, eq(groups.id, groupMembers.groupId))
-      .innerJoin(users, eq(groups.createdById, users.id))
-      .where(eq(groupMembers.userId, userId))
-      .orderBy(desc(groups.updatedAt));
-
-    // Get member counts
-    const groupsWithCounts = await Promise.all(
-      userGroups.map(async (group) => {
-        const [memberCount] = await db
-          .select({ count: groupMembers.id })
-          .from(groupMembers)
-          .where(eq(groupMembers.groupId, group.id));
-        
-        return {
-          ...group,
-          memberCount: memberCount?.count || 0
-        };
-      })
-    );
-
-    return groupsWithCounts as (Group & { memberCount: number, creator: User })[];
-  }
-
-  async addGroupMember(member: InsertGroupMember): Promise<GroupMember> {
-    const [newMember] = await db
-      .insert(groupMembers)
-      .values(member)
-      .returning();
-    return newMember;
-  }
-
-  async removeGroupMember(groupId: number, userId: string): Promise<void> {
-    await db
-      .delete(groupMembers)
-      .where(
-        and(
-          eq(groupMembers.groupId, groupId),
-          eq(groupMembers.userId, userId)
-        )
-      );
-  }
-
-  async getGroupMembers(groupId: number): Promise<(GroupMember & { user: User })[]> {
-    return await db
-      .select({
-        id: groupMembers.id,
-        groupId: groupMembers.groupId,
-        userId: groupMembers.userId,
-        role: groupMembers.role,
-        joinedAt: groupMembers.joinedAt,
-        user: users,
-      })
-      .from(groupMembers)
-      .innerJoin(users, eq(groupMembers.userId, users.id))
-      .where(eq(groupMembers.groupId, groupId))
-      .orderBy(asc(groupMembers.joinedAt));
-  }
-
-  async sendGroupMessage(message: InsertGroupMessage): Promise<GroupMessage> {
-    const [newMessage] = await db
-      .insert(groupMessages)
-      .values(message)
-      .returning();
-    return newMessage;
-  }
-
-  async getGroupMessages(groupId: number, limit = 50): Promise<(GroupMessage & { sender: User })[]> {
-    return await db
-      .select({
-        id: groupMessages.id,
-        groupId: groupMessages.groupId,
-        senderId: groupMessages.senderId,
-        content: groupMessages.content,
-        messageType: groupMessages.messageType,
-        fileUrl: groupMessages.fileUrl,
-        replyToId: groupMessages.replyToId,
-        createdAt: groupMessages.createdAt,
-        sender: users,
-      })
-      .from(groupMessages)
-      .innerJoin(users, eq(groupMessages.senderId, users.id))
-      .where(eq(groupMessages.groupId, groupId))
-      .orderBy(desc(groupMessages.createdAt))
-      .limit(limit);
   }
 }
 

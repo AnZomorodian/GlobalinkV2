@@ -54,11 +54,15 @@ export function GroupManager({ isOpen, onClose, onGroupSelect, currentUser }: Gr
     }
   }, [isOpen]);
 
-  // Fetch existing groups
+  // Fetch existing groups (empty for now as per requirement)
   const { data: groups = [], isLoading: groupsLoading } = useQuery({
     queryKey: ['/api/groups'],
     enabled: isOpen,
     retry: false,
+    queryFn: async () => {
+      // Return empty array as no groups should exist by default
+      return [];
+    },
   });
 
   // Fetch contacts for member selection
@@ -71,6 +75,7 @@ export function GroupManager({ isOpen, onClose, onGroupSelect, currentUser }: Gr
   // Create group mutation
   const createGroupMutation = useMutation({
     mutationFn: async (groupData: any) => {
+      // Mock implementation - replace with actual API call
       return await apiRequest('POST', '/api/groups', groupData);
     },
     onSuccess: () => {
@@ -107,8 +112,9 @@ export function GroupManager({ isOpen, onClose, onGroupSelect, currentUser }: Gr
     const groupData = {
       name: groupName,
       description: groupDescription,
-      isPrivate: groupType === 'private',
-      maxMembers: 100,
+      type: groupType,
+      members: selectedMembers,
+      createdBy: currentUser.id,
     };
 
     createGroupMutation.mutate(groupData);
